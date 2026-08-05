@@ -121,8 +121,7 @@ Wipes the local cluster, database, and IPFS state for a clean run:
 
 Production runs the same binary against a real Solana cluster, managed MongoDB, and durable IPFS
 pinning, with `environment: production` — which turns on fail-closed startup checks (the server
-refuses to start if any of the below is missing or weak). Work through
-[`docs/security/release-checklist.md`](docs/security/release-checklist.md) and qualify the cluster
+refuses to start if any of the below is missing or weak). Qualify the cluster
 with [`docs/operator/testnet-qualification.md`](docs/operator/testnet-qualification.md) first.
 
 1. Copy `server/config.example.yaml` to `server/config.yaml` and set `environment: production`.
