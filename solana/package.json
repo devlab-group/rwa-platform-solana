@@ -6,7 +6,7 @@
   "license": "MIT",
   "packageManager": "npm@11.6.0",
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "scripts": {
     "lint": "prettier --check 'tests/**/*.ts'",

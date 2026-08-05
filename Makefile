@@ -97,16 +97,14 @@ security-scan: ## Dependency vulnerability scan (fail-closed on reachable adviso
 	cd server && go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 	cd signer && go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 	# Production deps only: dev tooling (eslint, openapi-typescript, playwright) never
-	# ships in the SPA/binary, and some of its transitive advisories have no upstream fix
-	# (js-yaml via @redocly/openapi-core). Mirrors the ci.yml security-scan job.
-	cd web && npm audit --omit=dev --audit-level=high
-	# solana/: cargo audit is fail-closed on the Rust/SBF graph.
-	# The npm high/moderate advisories are unpatchable-upstream @solana/web3.js
-	# transitives in off-chain deployment tooling (parity with web/'s js-yaml), so
-	# the npm gate fails only on a critical while still reporting the rest.
+	# ships in the SPA/binary. The gate keeps npm audit's floor at `high` and
+	# suppresses only the reviewed, expiring advisory IDs in
+	# scripts/npm-audit-allowlist.json. Mirrors the ci.yml security-scan job.
+	node scripts/npm-audit-gate.mjs web
+	# solana/: cargo audit is fail-closed on the Rust/SBF graph; the npm side is
+	# off-chain deployment tooling that never ships in a program.
 	cd solana && cargo audit
-	cd solana && npm audit --omit=dev || true
-	cd solana && npm audit --omit=dev --audit-level=critical
+	node scripts/npm-audit-gate.mjs solana
 
 up: ## Start local dev stack (solana-test-validator, mongo, ipfs)
 	cd docker && docker compose up -d --build

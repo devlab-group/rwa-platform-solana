@@ -1,0 +1,20 @@
+{
+  "$comment": [
+    "Reviewed npm advisory exceptions for scripts/npm-audit-gate.mjs. An entry",
+    "here suppresses exactly one advisory ID and nothing else — the gate still",
+    "fails closed on every other high/critical, including new ones in the same",
+    "package. Adding an entry is a security decision: record why the advisory is",
+    "not exploitable here, and set `expires` to the date the reasoning must be",
+    "re-checked (an expired entry fails the build). Delete an entry as soon as",
+    "the gate reports it STALE — that means upstream shipped a fix."
+  ],
+  "advisories": [
+    {
+      "id": "GHSA-3gc7-fjrx-p6mg",
+      "package": "bigint-buffer",
+      "severity": "high",
+      "expires": "2027-02-01",
+      "reason": "No upstream fix exists: bigint-buffer@1.1.5 is the latest published release and is itself the vulnerable one, reached only through @solana/spl-token -> @solana/buffer-layout-utils, both already at latest. The overflow is in the optional native addon's toBigIntLE/toBufferLE bindings; bigint-buffer maps dist/node.js -> dist/browser.js via its package.json browser field, and that build hard-codes the pure-JS BigInt/hex path with the converter call unreachable. Verified the web bundle carries no native path (no bindings loader in dist/assets). In solana/ it is off-chain deployment tooling that never ships in a program."
+    }
+  ]
+}

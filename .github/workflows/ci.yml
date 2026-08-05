@@ -11,6 +11,15 @@ on:
     - cron: "0 6 * * 1" # Mondays 06:00 UTC
   workflow_dispatch:
 
+# Single source for the Node pin, so the five setup-node steps below cannot
+# drift apart or away from the local toolchain. It MUST match the node that
+# generated the committed package-lock.json files: npm's optional-peer
+# resolution differs between majors (npm 10 wants a nested utf-8-validate@5 for
+# jayson's ws@7 peer, npm 11 does not), and `npm ci` fails the lock-sync check
+# on the mismatch rather than installing.
+env:
+  NODE_VERSION: "24"
+
 jobs:
   signer:
     runs-on: ubuntu-latest
@@ -37,7 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "22" }
+        with: { node-version: "${{ env.NODE_VERSION }}" }
       # Match `make ci` (Makefile web-test): typecheck + test + build, not just build.
       - run: cd web && npm ci && npm run typecheck && npm test && npm run build
 
@@ -49,7 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "22" }
+        with: { node-version: "${{ env.NODE_VERSION }}" }
       - run: cd investor-web && npm ci && npm run typecheck && npm test && npm run build
 
   # Fast PR gate for the Solana port: the host-testable core crates (pricing,
@@ -120,7 +129,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: actions/setup-node@v4
-        with: { node-version: "22" }
+        with: { node-version: "${{ env.NODE_VERSION }}" }
       - name: install agave 4.1.1 + anchor 1.1.2 (pinned)
         run: |
           # Pin the Agave platform tools to a fixed version — the floating
@@ -169,7 +178,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "22" }
+        with: { node-version: "${{ env.NODE_VERSION }}" }
       - uses: actions/setup-go@v5
         with: { go-version: "1.25" }
       - name: build web
@@ -207,26 +216,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: "22" }
+        with: { node-version: "${{ env.NODE_VERSION }}" }
+      # Production deps only: dev tooling (eslint, openapi-typescript, playwright)
+      # never ships in the SPA. The gate holds the floor at `high` and suppresses
+      # only the individual advisory IDs reviewed in
+      # scripts/npm-audit-allowlist.json, each with an expiry — see the script
+      # header for why --audit-level is not the right knob for an exception.
       - name: npm audit (web, production deps)
-        run: cd web && npm ci && npm audit --omit=dev --audit-level=high
+        run: |
+          (cd web && npm ci)
+          node scripts/npm-audit-gate.mjs web
       - uses: dtolnay/rust-toolchain@stable
       # Scan the solana/ deployment + on-chain dependency graphs. `cargo audit`
-      # covers the Rust/SBF graph, failing closed on any vulnerability.
-      # The npm tree's high/moderate advisories (bigint-buffer, uuid) are
-      # unpatchable-upstream transitives of @solana/web3.js in off-chain deployment
-      # tooling that never ships in a program — the same accepted class as web/'s
-      # js-yaml residual — so the npm gate fails only on a *critical* (there are
-      # none today) while still reporting the rest for the record.
+      # covers the Rust/SBF graph, failing closed on any vulnerability; the npm
+      # side is off-chain deployment tooling that never ships in a program, and
+      # runs through the same allowlist-aware gate as web/.
       - name: cargo audit (solana Rust/SBF graph)
         run: |
           cargo install cargo-audit --locked
           cd solana && cargo audit
       - name: npm audit (solana tooling)
         run: |
-          cd solana && npm ci
-          npm audit --omit=dev || true                       # full report for the record
-          npm audit --omit=dev --audit-level=critical         # fail-closed on criticals
+          (cd solana && npm ci)
+          node scripts/npm-audit-gate.mjs solana
       - uses: actions/setup-go@v5
         with: { go-version: "1.25" }
       - name: govulncheck (server + signer)
