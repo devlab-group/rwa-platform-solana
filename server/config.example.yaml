@@ -1,0 +1,214 @@
+# RWA platform server configuration.
+#
+# Pass this file to the binaries with --config, e.g.:
+#     ./bin/platform --config /etc/rwa/config.yaml
+#     ./bin/opsctl   --config /etc/rwa/config.yaml <group> <action> ...
+#
+# ALL configuration lives here, INCLUDING SECRETS (the compliance hot key, the
+# KYC webhook HMAC secret, the admin JWT signing key). Treat this file exactly
+# like a .env or supervisor config: restrict its filesystem permissions
+# (e.g. chmod 600, owned by the service user) and keep it out of version
+# control. Every value below is OPTIONAL unless noted; an omitted key takes
+# the documented default shown as its value here. Unknown keys are rejected
+# at startup, so a typo can never silently fall back to a default.
+#
+# environment gates the production fail-closed startup checks. "development"
+# keeps permissive local defaults; "production" refuses to start on a config
+# that would silently degrade a security or durability guarantee (weak/empty
+# secrets, in-memory persistence, disabled rate limiting, an unverifiable
+# supply-controller Config account, single-point-of-failure IPFS, etc.).
+environment: development
+
+http:
+  addr: ":8080"
+  # metrics_addr serves Prometheus /metrics on its own listener. Loopback by
+  # default (the endpoint has no auth of its own); set to a routable address
+  # only behind your own auth/firewall.
+  metrics_addr: "127.0.0.1:9090"
+  # Slowloris / slow-client hardening for both listeners.
+  read_header_timeout: "5s"
+  read_timeout: "30s"
+  write_timeout: "60s"
+  idle_timeout: "120s"
+  max_header_bytes: 32768        # 32 KiB
+  max_request_body_bytes: 2097152 # 2 MiB; 0 disables (production requires an override)
+  # trusted_proxies is passed to gin's SetTrustedProxies. Empty (default)
+  # trusts NO proxies, so the rate limiter keys on the raw TCP peer address
+  # and X-Forwarded-For cannot be spoofed. Set to your reverse proxy / load
+  # balancer addresses when running behind one.
+  trusted_proxies: []
+  # trusted_proxies:
+  #   - "10.0.0.1"
+  #   - "172.16.0.0/12"
+  cors_allowed_origins: []
+  # cors_allowed_origins: ["http://localhost:5173"]
+
+# chain is how the server reaches and follows the chain: RPC endpoint,
+# commitment level, which cluster, where the indexer starts, and how stale a
+# checkpoint may get.
+chain:
+  rpc_url: "http://127.0.0.1:8899"   # required; the SERVER's own backend RPC
+                                      # (indexer + compliance hot key). The
+                                      # browser SPA's RPC endpoint is a
+                                      # build-time-only value (VITE_SOLANA_RPC_URL)
+                                      # neither read from nor supplied by this
+                                      # config — do not conflate the two.
+                                      # MUST be a full-history (archival) node, or
+                                      # one whose retained getSignaturesForAddress
+                                      # history reaches back through every
+                                      # deployment-relevant slot: a node that has
+                                      # pruned/never held history back to the
+                                      # indexer's checkpoint makes every affected
+                                      # program's poll fail loudly rather than
+                                      # silently skip the gap — see
+                                      # blockchain/solana/indexer.go's
+                                      # fetchNewSignatures doc comment.
+  commitment: "finalized"
+  chain_id: 103                       # required, must be positive
+  start_slot: 0
+  # cluster_genesis is one of the two mint-attestation domain inputs
+  # (required, base58-validated) — the target cluster's genesis hash. MUST
+  # come from the bootstrap deployment manifest (bootstrap.mjs's `pdas`
+  # output) — never derive it yourself.
+  cluster_genesis: "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+  # How stale the compliance program's indexer checkpoint may get before
+  # GET /health reports not-ready — eligibility answers are
+  # event-sourced, so a wedged indexer would otherwise keep serving a frozen
+  # answer forever. Defaults to a generous multiple of the 5s indexer poll
+  # interval.
+  max_checkpoint_age: "5m"
+
+# contract is what was deployed: the profile's projectId, every program/mint
+# address for the program suite, and the on-chain parameters fixed at
+# bootstrap. There is no on-chain factory to deploy from, so every
+# program/mint address below is provisioned independently and provided here
+# directly. The placeholder pubkey below is a syntactically valid base58
+# 32-byte value (not a real, deployed address) so this example loads cleanly
+# — replace every one of them with your actual deployment's addresses before
+# running against a real cluster.
+contract:
+  # project_id is the UUID this deployment is pinned to. Set it BEFORE running
+  # the platform: the admin web reads it from GET /api/v1/config to build the
+  # Asset Profile, and the server rejects any profile whose projectId differs.
+  # Empty leaves the gate off (development/test); production requires it.
+  project_id: ""
+  programs:                           # all six required, base58-validated
+    compliance: "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+    vault: "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+    pricing: "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+    transfer_hook: "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+    redemption: "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+    supply_controller: "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+  rwa_mint: "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"          # required
+  rwa_decimals: 9                     # required (unlike quote_decimals); the RWA Token-2022 mint's decimals()
+  quote_mint: "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"        # required
+  quote_decimals: 6
+  redemption_timeout: 1209600         # seconds; required, must be within [86400, 31536000]
+                                       # ([1 day, 365 days], matching the on-chain
+                                       # rwa-redemption program's own bound; default 14 days)
+  # supply_config is the other mint-attestation domain input (required,
+  # base58-validated) — the rwa-supply-controller config PDA
+  # (pdas.supplyConfig). MUST come from the bootstrap deployment manifest,
+  # like cluster_genesis above — never derive it yourself.
+  supply_config: "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"
+  # vault_config is the rwa-vault Config PDA (pdas.vaultConfig) — the value
+  # the on-chain rwa-supply-controller actually binds a mint attestation's
+  # `vault` field to. This is NOT programs.vault above (that's the vault
+  # PROGRAM id, an executable address, not an account) — see
+  # Config.VaultConfig's doc comment.
+  vault_config: "4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi"      # required; the rwa-vault config PDA
+
+mongo:
+  uri: "mongodb://127.0.0.1:27017"
+  db: "rwa_platform"
+  # "mongo" (default) or "memory". "memory" is a local/CI opt-in only and is
+  # refused in production.
+  persistence_mode: "mongo"
+
+ipfs:
+  api_url: "http://127.0.0.1:5001"
+  # At least one backup destination is required in production (an asset
+  # package is not durably published until replication_threshold of the
+  # configured backups have pinned it).
+  backup_archive_dir: ""         # local reproducible content archive
+  backup_kubo_url: ""            # a second, independent Kubo node
+  replication_threshold: 1       # must be 1..(configured backup count) in production
+
+# security holds every identity and secret the server carries: the admin
+# wallet, the compliance hot key, and every HMAC/JWT secret.
+security:
+  # SECRET. Empty outside production = webhook feature disabled. If set, must
+  # be at least 32 bytes; production requires it. Never use a placeholder.
+  kyc_webhook_hmac_secret: ""
+  idempotency_ttl: "24h"
+  wallet_challenge_ttl: "15m"
+  wallet_session_ttl: "15m"
+  jwt_ttl: "24h"                 # admin JWT lifetime; a lapsed token costs one wallet re-login
+  # SECRET. HMAC key that signs admin JWTs. Production requires at least 32
+  # bytes and not a known placeholder.
+  jwt_secret: ""
+  rate_limit_rps: 50             # <=0 disables per-IP rate limiting (production requires an override)
+  rate_limit_burst: 100
+  admin_pubkey: ""
+  # Solana compliance-authority hot key — optional: unset disables POST
+  # /compliance/status and the KYC webhook auto-allowlist path (both
+  # 501/no-op) rather than failing startup.
+  # Either a base58 64-byte ed25519 secret key (seed+pubkey) inline, or a
+  # filesystem path to a Solana CLI keypair JSON file (`solana-keygen new`'s
+  # output). Must be the on-chain rwa-compliance registry's configured
+  # authority, or set_status calls will be rejected on-chain.
+  # SECRET. In production, the INLINE base58 form is refused (it keeps key
+  # material directly in this plaintext config — there is no keystore/vault
+  # backend for this key yet) — use the keypair-file-path form instead, or
+  # set production_overrides.allow_plaintext_compliance_key: true to
+  # explicitly opt in.
+  compliance_key: ""
+
+# KYC provider. Selects which identity-verification backend the platform loads
+# (internal/kyc). An approved verification result flips the wallet to Allowed
+# on-chain automatically via the compliance hot key — the same webhook →
+# reconciler path the generic webhook already uses.
+kyc:
+  # "none" (default): no server-initiated verification; the KYC webhook accepts
+  #   the generic HMAC shape signed with security.kyc_webhook_hmac_secret.
+  # "sumsub": Sum&Substance.  "onfido": Onfido (Entrust).
+  # Selecting a provider requires that provider's fields below.
+  provider: "none"
+  sumsub:
+    app_token: ""              # SECRET — Sumsub app token
+    secret_key: ""             # SECRET — signs outbound Sumsub API calls
+    webhook_secret: ""         # SECRET — verifies inbound webhooks (dashboard "Webhook secret key"); >=32 bytes in production
+    base_url: ""               # default https://api.sumsub.com
+    level_name: ""             # verification level; default "basic-kyc-level"
+  onfido:
+    api_token: ""              # SECRET — Onfido API token
+    webhook_token: ""          # SECRET — verifies inbound webhooks (X-SHA2-Signature)
+    region: "eu"               # eu | us | ca (data residency / API host)
+    workflow_id: ""            # Onfido Studio workflow to run
+    referrer: ""               # SDK token referrer pattern; default "*://*/*"
+
+alerts:
+  pending_redemption_sla: "48h"
+  funded_claim_failure_sla: "24h"
+
+# Emergency escape hatches for the production fail-closed checks.
+# Leave false/omitted unless you have a specific, documented reason.
+production_overrides:
+  allow_unbounded_request_body: false
+  allow_disabled_rate_limit: false
+  # Lets a production instance boot with a weaker-than-finalized
+  # chain.commitment. Leave false: the indexer has no reorg handling, so
+  # correctness rests entirely on finalized.
+  allow_weak_commitment: false
+  # Lets a production instance seed its Project record Active even though
+  # the boot-time rwa-supply-controller Config account cross-check (owner +
+  # Anchor discriminator + vault/admin/token_mint/cluster fields) could not
+  # be verified — e.g. a deliberate pre-`initialize` boot. Leave false so a
+  # missing/unreadable/mismatched account is a startup failure, not a
+  # silent skip.
+  allow_unverified_supply_config: false
+  # Lets a production instance configure security.compliance_key as an inline
+  # base58 secret (plaintext in this config file) instead of a keypair-file
+  # path. Leave false so an inline production key is a startup failure, not
+  # a silent plaintext-key posture.
+  allow_plaintext_compliance_key: false

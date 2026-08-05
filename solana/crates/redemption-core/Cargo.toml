@@ -1,0 +1,9 @@
+[package]
+name = "redemption-core"
+version = "0.1.0"
+edition = "2021"
+description = "Redemption request->fund->claim state machine guards, ported from RedemptionEscrow.sol"
+license = "MIT"
+
+[lib]
+crate-type = ["lib"]

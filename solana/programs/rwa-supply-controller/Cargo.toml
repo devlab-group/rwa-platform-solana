@@ -1,0 +1,33 @@
+[package]
+name = "rwa-supply-controller"
+version = "0.1.0"
+edition = "2021"
+description = "secp256k1 auditor-attestation verify + Token-2022 mint/burn (SupplyController.sol on Solana)"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "rwa_supply_controller"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = "1.1.2"
+anchor-spl = { version = "1.1.2", features = ["token", "token_2022"] }
+# secp256k1_recover left `solana_program` in the crate split (Agave 4.x); pull the
+# dedicated crate to keep the auditor-attestation verification.
+solana-secp256k1-recover = "3"
+attestation = { path = "../../crates/attestation" }
+# `cpi` so `finalize` can CPI `rwa_compliance::set_finalized`.
+rwa-compliance = { path = "../rwa-compliance", features = ["cpi"] }
+rwa-transfer-hook = { path = "../rwa-transfer-hook", features = ["no-entrypoint"] }
+rwa-vault = { path = "../rwa-vault", features = ["cpi"] }
+# Read-only typed sibling configs cross-checked at finalize; no CPI needed.
+rwa-redemption = { path = "../rwa-redemption", features = ["no-entrypoint"] }
+rwa-pricing = { path = "../rwa-pricing", features = ["no-entrypoint"] }

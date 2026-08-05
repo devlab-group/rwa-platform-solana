@@ -1,0 +1,1918 @@
+{
+  "address": "FtiSEvVU51FBuXuD5fBK1JDqeyAayJwuNSJx7vXGPQBT",
+  "metadata": {
+    "name": "rwa_supply_controller",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "secp256k1 auditor-attestation verify + Token-2022 mint/burn (SupplyController.sol on Solana)"
+  },
+  "instructions": [
+    {
+      "name": "accept_admin",
+      "docs": [
+        "Two-step admin rotation (accept)."
+      ],
+      "discriminator": [
+        112,
+        42,
+        45,
+        90,
+        116,
+        181,
+        13,
+        170
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  112,
+                  112,
+                  108,
+                  121,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "new_admin",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "burn_supply",
+      "docs": [
+        "Verify a burn attestation and burn `amount` of returned Vault inventory."
+      ],
+      "discriminator": [
+        6,
+        185,
+        12,
+        193,
+        130,
+        247,
+        181,
+        35
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  112,
+                  112,
+                  108,
+                  121,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                196,
+                11,
+                7,
+                132,
+                28,
+                242,
+                159,
+                208,
+                109,
+                62,
+                38,
+                181,
+                145,
+                168,
+                249,
+                249,
+                115,
+                87,
+                84,
+                27,
+                119,
+                113,
+                187,
+                186,
+                199,
+                34,
+                34,
+                134,
+                224,
+                237,
+                212,
+                96
+              ]
+            }
+          },
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "mint",
+          "writable": true
+        },
+        {
+          "name": "vault_config",
+          "docs": [
+            "Vault program config (the inventory owner) — must be the pinned vault."
+          ]
+        },
+        {
+          "name": "vault_token",
+          "docs": [
+            "Pinned to the canonical inventory ATA (see `MintSupply`)."
+          ],
+          "writable": true
+        },
+        {
+          "name": "nonce_marker",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  110,
+                  111,
+                  110,
+                  99,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "operation_marker",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  111,
+                  112,
+                  101,
+                  114,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "operation_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "vault_program",
+          "address": "2XnocgeBA5iT4mUEvuMCkbNPBscs9n7A2MdYL2zPBVjT"
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "The RWA leg is always Token-2022; pin the program so a PDA-signed CPI",
+            "(mint_to here, or the forwarded controller_burn) is never delivered to a",
+            "caller-substituted program."
+          ],
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "operation_id",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "metadata_digest",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "nonce",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "valid_until",
+          "type": "u64"
+        },
+        {
+          "name": "signature",
+          "type": {
+            "array": [
+              "u8",
+              64
+            ]
+          }
+        },
+        {
+          "name": "recovery_id",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "cancel_admin_transfer",
+      "docs": [
+        "Withdraw a pending admin transfer (current admin only)."
+      ],
+      "discriminator": [
+        38,
+        131,
+        157,
+        31,
+        240,
+        137,
+        44,
+        215
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  112,
+                  112,
+                  108,
+                  121,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "finalize",
+      "docs": [
+        "Verify the whole singleton stack is wired correctly, then flip the",
+        "global go-live flag. Gated on the config admin + the registry admin; the",
+        "deployer-binding lives in the `set_finalized` CPI, which requires the",
+        "compliance program's upgrade authority. `finalize` no longer",
+        "carries the supply-controller's own upgrade-authority gate, so revoking that",
+        "authority or rotating the config admin before go-live no longer bricks it —",
+        "but the deployer must still finalize BEFORE any such change. Runnable only",
+        "after every program has been initialized and the compliance system",
+        "addresses pinned. The sibling configs are passed as typed, PDA-pinned",
+        "accounts (`seeds::program` = the compiled sibling program id), so a caller",
+        "cannot substitute look-alikes; every stored cross-program address is then",
+        "cross-checked in both directions. On success it sets its own `finalized`",
+        "flag (gating mint/burn) and CPIs `rwa_compliance::set_finalized` to set the",
+        "registry flag that gates buy and every redemption leg. Nothing is",
+        "mint/buy/redeem-able before this passes, so a bootstrap typo is caught",
+        "while it is still recoverable rather than after assets exist."
+      ],
+      "discriminator": [
+        171,
+        61,
+        218,
+        56,
+        127,
+        115,
+        12,
+        217
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  112,
+                  112,
+                  108,
+                  121,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                196,
+                11,
+                7,
+                132,
+                28,
+                242,
+                159,
+                208,
+                109,
+                62,
+                38,
+                181,
+                145,
+                168,
+                249,
+                249,
+                115,
+                87,
+                84,
+                27,
+                119,
+                113,
+                187,
+                186,
+                199,
+                34,
+                34,
+                134,
+                224,
+                237,
+                212,
+                96
+              ]
+            }
+          }
+        },
+        {
+          "name": "vault_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                22,
+                190,
+                230,
+                208,
+                139,
+                62,
+                224,
+                252,
+                146,
+                31,
+                249,
+                157,
+                115,
+                69,
+                143,
+                5,
+                129,
+                65,
+                237,
+                220,
+                34,
+                172,
+                251,
+                130,
+                170,
+                81,
+                22,
+                254,
+                25,
+                69,
+                11,
+                222
+              ]
+            }
+          }
+        },
+        {
+          "name": "redemption_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  109,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                30,
+                12,
+                50,
+                122,
+                108,
+                183,
+                193,
+                160,
+                53,
+                19,
+                253,
+                255,
+                49,
+                231,
+                56,
+                59,
+                43,
+                104,
+                47,
+                72,
+                183,
+                55,
+                110,
+                237,
+                52,
+                32,
+                251,
+                197,
+                37,
+                6,
+                199,
+                91
+              ]
+            }
+          }
+        },
+        {
+          "name": "strategy",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                150,
+                133,
+                68,
+                88,
+                241,
+                156,
+                178,
+                8,
+                111,
+                7,
+                97,
+                220,
+                183,
+                189,
+                69,
+                121,
+                119,
+                234,
+                187,
+                95,
+                78,
+                249,
+                147,
+                133,
+                96,
+                67,
+                50,
+                210,
+                81,
+                167,
+                79,
+                112
+              ]
+            }
+          }
+        },
+        {
+          "name": "registry_admin",
+          "docs": [
+            "Registry admin, whose signature authorizes the `set_finalized` CPI."
+          ],
+          "signer": true
+        },
+        {
+          "name": "compliance_program",
+          "address": "ECGfTwvG1JaAxJ11ub7HjgTB9KJFH4HSDUJR7reFeVVH"
+        },
+        {
+          "name": "compliance_program_data"
+        },
+        {
+          "name": "extra_account_meta_list",
+          "docs": [
+            "The mint's transfer-hook `ExtraAccountMetaList` PDA. It is",
+            "NOT pinned by seeds here on purpose — `validate_extra_account_meta_list`",
+            "re-derives the canonical key from `[EXTRA_META_SEED, mint]` and asserts the",
+            "passed key, the hook-program owner, and the exact canonical contents, so a",
+            "wrong/absent/stale account fails go-live. Passing an arbitrary account lets a",
+            "negative test drive the failure path."
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "cluster",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  112,
+                  112,
+                  108,
+                  121,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "vault_authority"
+        },
+        {
+          "name": "registry"
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "program",
+          "address": "FtiSEvVU51FBuXuD5fBK1JDqeyAayJwuNSJx7vXGPQBT"
+        },
+        {
+          "name": "program_data"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "admin",
+          "type": "pubkey"
+        },
+        {
+          "name": "auditor_eth",
+          "type": {
+            "array": [
+              "u8",
+              20
+            ]
+          }
+        },
+        {
+          "name": "profile_digest",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "cluster",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mint",
+      "docs": [
+        "Verify a mint attestation and mint `amount` to the Vault inventory account."
+      ],
+      "discriminator": [
+        51,
+        57,
+        225,
+        47,
+        182,
+        146,
+        137,
+        166
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  112,
+                  112,
+                  108,
+                  121,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                196,
+                11,
+                7,
+                132,
+                28,
+                242,
+                159,
+                208,
+                109,
+                62,
+                38,
+                181,
+                145,
+                168,
+                249,
+                249,
+                115,
+                87,
+                84,
+                27,
+                119,
+                113,
+                187,
+                186,
+                199,
+                34,
+                34,
+                134,
+                224,
+                237,
+                212,
+                96
+              ]
+            }
+          },
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "mint",
+          "writable": true
+        },
+        {
+          "name": "vault_token",
+          "docs": [
+            "The Vault inventory account is pinned to the *canonical ATA* of",
+            "`config.vault` for `mint`, not merely to any account this PDA happens to",
+            "own. This is the one field an attacker could otherwise choose freely while",
+            "a leaked/front-run attestation still verifies; pinning it forces every mint",
+            "to the single inventory account (which, being an ATA, also carries",
+            "`ImmutableOwner`), so a redirect into an unspendable shadow account that",
+            "permanently burns the record key is impossible."
+          ],
+          "writable": true
+        },
+        {
+          "name": "nonce_marker",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  110,
+                  111,
+                  110,
+                  99,
+                  101
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "record_marker",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  111,
+                  114,
+                  100,
+                  45,
+                  107,
+                  101,
+                  121
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "record_key"
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "The RWA leg is always Token-2022; pin the program so a PDA-signed CPI",
+            "(mint_to here, or the forwarded controller_burn) is never delivered to a",
+            "caller-substituted program."
+          ],
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "record_key",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "metadata_digest",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "nonce",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "valid_until",
+          "type": "u64"
+        },
+        {
+          "name": "signature",
+          "type": {
+            "array": [
+              "u8",
+              64
+            ]
+          }
+        },
+        {
+          "name": "recovery_id",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "propose_admin",
+      "docs": [
+        "Two-step admin rotation (propose). Rejects a zero pending admin and emits",
+        "the proposal."
+      ],
+      "discriminator": [
+        121,
+        214,
+        199,
+        212,
+        87,
+        39,
+        117,
+        234
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  112,
+                  112,
+                  108,
+                  121,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_auditor",
+      "discriminator": [
+        90,
+        12,
+        154,
+        66,
+        85,
+        118,
+        8,
+        107
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  117,
+                  112,
+                  112,
+                  108,
+                  121,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_auditor_eth",
+          "type": {
+            "array": [
+              "u8",
+              20
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Marker",
+      "discriminator": [
+        190,
+        81,
+        208,
+        182,
+        158,
+        86,
+        51,
+        154
+      ]
+    },
+    {
+      "name": "rwa_supply_controller::Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AdminChanged",
+      "discriminator": [
+        232,
+        34,
+        31,
+        226,
+        62,
+        18,
+        19,
+        114
+      ]
+    },
+    {
+      "name": "AdminProposed",
+      "discriminator": [
+        129,
+        249,
+        226,
+        227,
+        199,
+        82,
+        110,
+        243
+      ]
+    },
+    {
+      "name": "AdminTransferCancelled",
+      "discriminator": [
+        93,
+        23,
+        69,
+        55,
+        216,
+        128,
+        106,
+        56
+      ]
+    },
+    {
+      "name": "AuditorChanged",
+      "discriminator": [
+        161,
+        37,
+        137,
+        138,
+        84,
+        145,
+        157,
+        4
+      ]
+    },
+    {
+      "name": "Burned",
+      "discriminator": [
+        207,
+        37,
+        251,
+        154,
+        239,
+        229,
+        14,
+        67
+      ]
+    },
+    {
+      "name": "Finalized",
+      "discriminator": [
+        4,
+        77,
+        242,
+        80,
+        20,
+        152,
+        247,
+        252
+      ]
+    },
+    {
+      "name": "Minted",
+      "discriminator": [
+        174,
+        131,
+        21,
+        57,
+        88,
+        117,
+        114,
+        121
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "ZeroAddress",
+      "msg": "zero address"
+    },
+    {
+      "code": 6001,
+      "name": "ZeroAuditor",
+      "msg": "zero auditor address"
+    },
+    {
+      "code": 6002,
+      "name": "ZeroCluster",
+      "msg": "cluster genesis hash must be non-zero"
+    },
+    {
+      "code": 6003,
+      "name": "ClusterMismatch",
+      "msg": "restated cluster does not match the pinned cluster"
+    },
+    {
+      "code": 6004,
+      "name": "MalleableSignature",
+      "msg": "malleable (high-S) signature rejected"
+    },
+    {
+      "code": 6005,
+      "name": "ProjectPaused",
+      "msg": "project is paused"
+    },
+    {
+      "code": 6006,
+      "name": "AttestationExpired",
+      "msg": "attestation expired"
+    },
+    {
+      "code": 6007,
+      "name": "ZeroAmount",
+      "msg": "amount must be non-zero"
+    },
+    {
+      "code": 6008,
+      "name": "InsufficientVaultInventory",
+      "msg": "insufficient vault inventory to burn"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidSignature",
+      "msg": "invalid auditor signature"
+    },
+    {
+      "code": 6010,
+      "name": "WrongRegistry",
+      "msg": "wrong registry account"
+    },
+    {
+      "code": 6011,
+      "name": "WrongMint",
+      "msg": "wrong mint account"
+    },
+    {
+      "code": 6012,
+      "name": "WrongVault",
+      "msg": "wrong vault config account"
+    },
+    {
+      "code": 6013,
+      "name": "NotAdmin",
+      "msg": "caller is not the admin"
+    },
+    {
+      "code": 6014,
+      "name": "NotPendingAdmin",
+      "msg": "caller is not the pending admin"
+    },
+    {
+      "code": 6015,
+      "name": "NoPendingAdmin",
+      "msg": "no pending admin transfer to accept"
+    },
+    {
+      "code": 6016,
+      "name": "NotUpgradeAuthority",
+      "msg": "caller is not the program upgrade authority"
+    },
+    {
+      "code": 6017,
+      "name": "NotCanonicalAta",
+      "msg": "vault token account is not the canonical inventory ATA"
+    },
+    {
+      "code": 6018,
+      "name": "MintQuoteSame",
+      "msg": "RWA mint and quote mint must be different"
+    },
+    {
+      "code": 6019,
+      "name": "UnsafeMint",
+      "msg": "configured RWA mint is unsafe (not Token-2022 / wrong or mutable hook / disallowed extension)"
+    },
+    {
+      "code": 6020,
+      "name": "WiringMismatch",
+      "msg": "cross-program wiring mismatch"
+    },
+    {
+      "code": 6021,
+      "name": "MetaListInvalid",
+      "msg": "transfer-hook ExtraAccountMetaList PDA is missing, mis-owned, or incorrect"
+    },
+    {
+      "code": 6022,
+      "name": "DecimalsMismatch",
+      "msg": "pricing decimals do not match the RWA mint"
+    },
+    {
+      "code": 6023,
+      "name": "QuoteDecimalsMismatch",
+      "msg": "vault and escrow quote decimals disagree"
+    },
+    {
+      "code": 6024,
+      "name": "WrongTokenProgram",
+      "msg": "wrong token program for the RWA leg"
+    },
+    {
+      "code": 6025,
+      "name": "NotFinalized",
+      "msg": "deployment is not finalized"
+    },
+    {
+      "code": 6026,
+      "name": "AlreadyFinalized",
+      "msg": "deployment is already finalized"
+    }
+  ],
+  "types": [
+    {
+      "name": "AdminChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "previous",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AdminProposed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "new_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AdminTransferCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "cancelled",
+            "type": "pubkey"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AuditorChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "previous",
+            "type": {
+              "array": [
+                "u8",
+                20
+              ]
+            }
+          },
+          {
+            "name": "new_auditor",
+            "type": {
+              "array": [
+                "u8",
+                20
+              ]
+            }
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Burned",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "operation_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "metadata_digest",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "nonce",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Finalized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "supply",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "escrow",
+            "type": "pubkey"
+          },
+          {
+            "name": "registry",
+            "type": "pubkey"
+          },
+          {
+            "name": "strategy",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Marker",
+      "docs": [
+        "One-byte replay marker; existence == \"already used\"."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Minted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "record_key",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "metadata_digest",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "nonce",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Registry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "compliance_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "pauser",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "escrow",
+            "type": "pubkey"
+          },
+          {
+            "name": "supply_controller",
+            "docs": [
+              "Supply-controller program id, pinned at `set_system_addresses`; the",
+              "authority behind the `finalize` CPI that flips `finalized`."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "rwa_mint",
+            "docs": [
+              "The RWA mint, pinned at `set_system_addresses`. The transfer hook —",
+              "the single compliance chokepoint — asserts the mint it is invoked for equals",
+              "this, so the guarantee no longer depends only on the handler being",
+              "side-effect-free for a foreign mint that points its hook extension here."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "system_set",
+            "type": "bool"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "finalized",
+            "docs": [
+              "Global go-live flag; set once cross-program wiring is verified."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Strategy",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pricer",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_decimals",
+            "type": "u8"
+          },
+          {
+            "name": "purchase_price",
+            "type": "u64"
+          },
+          {
+            "name": "redemption_price",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "rwa_redemption::Config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasurer",
+            "type": "pubkey"
+          },
+          {
+            "name": "redemption_manager",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "rwa_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_decimals",
+            "docs": [
+              "The quote mint's decimals, bound at `initialize` to the price scale."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "strategy",
+            "type": "pubkey"
+          },
+          {
+            "name": "registry",
+            "type": "pubkey"
+          },
+          {
+            "name": "redemption_timeout",
+            "type": "u64"
+          },
+          {
+            "name": "next_id",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "rwa_supply_controller::Config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "auditor_eth",
+            "type": {
+              "array": [
+                "u8",
+                20
+              ]
+            }
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "docs": [
+              "Vault inventory-account authority PDA (the attestation `vault` field)."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "registry",
+            "type": "pubkey"
+          },
+          {
+            "name": "profile_digest",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "cluster",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "finalized",
+            "docs": [
+              "Set by `finalize` once cross-program wiring is verified; gates mint/burn."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "rwa_vault::Config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasurer",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "supply_controller",
+            "docs": [
+              "supply-controller config PDA allowed to call `controller_burn`."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "rwa_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_decimals",
+            "docs": [
+              "the quote mint's decimals, bound at `initialize` to the price scale."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "strategy",
+            "type": "pubkey"
+          },
+          {
+            "name": "registry",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

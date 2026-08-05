@@ -1,0 +1,26 @@
+{
+  "_comment": "FROZEN golden burn attestation, the burn counterpart of mint-attestation.json: same domain and same auditor/profileDigest/metadataDigest/amount/nonce/validUntil/vault field values, with recordKey replaced by operationId (BurnAttestation has no recordKey). Its domainSeparator/hashStruct/digest are exercised by the Go signer (signer/internal/attestation/attestation_test.go, TestSolanaBurnVector) and by server/internal/eip712/attestation_test.go; its signature/recoveryId are recovered and low-S-checked by the Go signer only -- the Rust verifier (solana/crates/attestation) and the TypeScript parity test (solana/tests/attestation-parity.ts) pin the mint vector, so treat this file's signature as Go-verified rather than a proven cross-language parity anchor. digest is the raw 32-byte keccak digest that secp256k1_recover(digest, signature, recoveryId) must recover `auditor` from (no message-prefixing of any kind is applied). signature is the 64-byte compact r||s form the on-chain syscall consumes -- the recovery byte is carried separately as recoveryId (0 or 1), not appended -- and is canonical low-S, which the on-chain verifier requires. Produced by a fixed, publicly-known test key; never use it for anything real.",
+  "domain": {
+    "name": "RWA-Supply-Attestation-Solana",
+    "version": "1",
+    "cluster": "0x1111111111111111111111111111111111111111111111111111111111111111",
+    "program": "0x2222222222222222222222222222222222222222222222222222222222222222",
+    "config": "0x3333333333333333333333333333333333333333333333333333333333333333"
+  },
+  "message": {
+    "auditor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+    "profileDigest": "0x4444444444444444444444444444444444444444444444444444444444444444",
+    "operationId": "0x5555555555555555555555555555555555555555555555555555555555555555",
+    "metadataDigest": "0x6666666666666666666666666666666666666666666666666666666666666666",
+    "amount": "1000000000000",
+    "nonce": "0x000000000000000000000000000000000000000000000000000000000000002a",
+    "validUntil": 1800000000,
+    "vault": "0x7777777777777777777777777777777777777777777777777777777777777777"
+  },
+  "domainSeparator": "0xd2ea3f95cff955b96bd1461fca655fdfff232e80eb349cfca6079b2e21df89db",
+  "hashStruct": "0xba5d9ab285fe4a67cb797668198f36ec2fad5a93e6a4953e7bd3e9028f5e5b74",
+  "digest": "0x112d3ae2c5d295b324bd8d12a48b0f8acb7a10b062e9d1a6974081130e10a17a",
+  "signerPrivateKey": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+  "signature": "0xed02f18d99d2327b78a91caaa7c6211388a408451532ae73e5465bd688bc8c0e25730e41bc862d41677f8b36624ae7ee7e29eeb5b03c61065e55c278e92d13e7",
+  "recoveryId": 0
+}

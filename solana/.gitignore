@@ -1,0 +1,22 @@
+# Rust / Anchor build output
+target/
+**/*.rs.bk
+# Cargo.lock IS committed (L-03): reproducible SBF builds via `--locked`.
+
+# Anchor
+.anchor/
+test-ledger/
+
+# Node
+node_modules/
+.yarn/
+yarn-error.log
+
+# Local validator ledger (docker bind mount lives under docker/data)
+test-ledger/
+scripts/bootstrap.config.json
+scripts/bootstrap.rwa-mint.json
+# Test quote-mint authority keypair (create-test-quote-mint.mjs). Throwaway, but
+# it is still a secret key and it is the mint authority for the test token.
+test-quote-mint*.json
+deployment-manifest.json

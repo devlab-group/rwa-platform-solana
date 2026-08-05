@@ -1,0 +1,2302 @@
+{
+  "address": "32J24AMuuocveSVofvbqWS4HrspAKqsNp7xnrtWw1uFY",
+  "metadata": {
+    "name": "rwa_redemption",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Redemption request->fund->claim state machine (RedemptionEscrow.sol on Solana)"
+  },
+  "instructions": [
+    {
+      "name": "accept_admin",
+      "docs": [
+        "Two-step admin rotation (accept)."
+      ],
+      "discriminator": [
+        112,
+        42,
+        45,
+        90,
+        116,
+        181,
+        13,
+        170
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  109,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "new_admin",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "cancel_admin_transfer",
+      "docs": [
+        "Withdraw a pending admin transfer (current admin only)."
+      ],
+      "discriminator": [
+        38,
+        131,
+        157,
+        31,
+        240,
+        137,
+        44,
+        215
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  109,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "cancel_redemption",
+      "docs": [
+        "No `!paused` guard (deliberate) — the escrow-only hook bypass lets this",
+        "complete during an emergency pause. Beneficiary must still be allowed."
+      ],
+      "discriminator": [
+        197,
+        243,
+        101,
+        86,
+        2,
+        37,
+        105,
+        106
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  109,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                196,
+                11,
+                7,
+                132,
+                28,
+                242,
+                159,
+                208,
+                109,
+                62,
+                38,
+                181,
+                145,
+                168,
+                249,
+                249,
+                115,
+                87,
+                84,
+                27,
+                119,
+                113,
+                187,
+                186,
+                199,
+                34,
+                34,
+                134,
+                224,
+                237,
+                212,
+                96
+              ]
+            }
+          },
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "request",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  113,
+                  117,
+                  101,
+                  115,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rwa_mint",
+          "docs": [
+            "Read-only (see `RequestRedemption`)."
+          ]
+        },
+        {
+          "name": "escrow_token",
+          "docs": [
+            "Pinned to the canonical escrow ATA of the redemption PDA."
+          ],
+          "writable": true
+        },
+        {
+          "name": "beneficiary_token",
+          "writable": true
+        },
+        {
+          "name": "beneficiary_record"
+        },
+        {
+          "name": "beneficiary",
+          "signer": true
+        },
+        {
+          "name": "rwa_token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": [
+        {
+          "name": "_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "claim_redemption",
+      "docs": [
+        "Permissionless. Keeps its `!paused` guard; never re-checks compliance."
+      ],
+      "discriminator": [
+        109,
+        110,
+        9,
+        188,
+        195,
+        217,
+        112,
+        83
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  109,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                196,
+                11,
+                7,
+                132,
+                28,
+                242,
+                159,
+                208,
+                109,
+                62,
+                38,
+                181,
+                145,
+                168,
+                249,
+                249,
+                115,
+                87,
+                84,
+                27,
+                119,
+                113,
+                187,
+                186,
+                199,
+                34,
+                34,
+                134,
+                224,
+                237,
+                212,
+                96
+              ]
+            }
+          },
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "request",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  113,
+                  117,
+                  101,
+                  115,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rwa_mint",
+          "docs": [
+            "Read-only (see `RequestRedemption`)."
+          ]
+        },
+        {
+          "name": "quote_mint"
+        },
+        {
+          "name": "escrow_token",
+          "docs": [
+            "Pinned to the canonical escrow ATA of the redemption PDA."
+          ],
+          "writable": true
+        },
+        {
+          "name": "escrow_quote",
+          "docs": [
+            "Pinned to the canonical escrow-quote ATA of the redemption PDA."
+          ],
+          "writable": true
+        },
+        {
+          "name": "vault_token",
+          "docs": [
+            "Vault inventory account — RWA returns here. Pinned to the canonical",
+            "inventory ATA of the pinned vault authority."
+          ],
+          "writable": true
+        },
+        {
+          "name": "beneficiary_quote",
+          "writable": true
+        },
+        {
+          "name": "rwa_token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "quote_token_program",
+          "docs": [
+            "Pinned to the quote mint's own owning program."
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "close_request",
+      "docs": [
+        "Reclaim the rent of a request that has reached a terminal state",
+        "(`Completed` / `Rejected` / `Cancelled`), returning the lamports to the",
+        "beneficiary who paid for it. Request PDAs are seeded on a monotonic counter,",
+        "so a closed id is never reused — closing introduces no replay surface.",
+        "Permissionless: the only effect is refunding rent to the recorded",
+        "beneficiary, and a still-open request is rejected by the status check."
+      ],
+      "discriminator": [
+        170,
+        46,
+        165,
+        120,
+        223,
+        102,
+        115,
+        2
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  109,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                196,
+                11,
+                7,
+                132,
+                28,
+                242,
+                159,
+                208,
+                109,
+                62,
+                38,
+                181,
+                145,
+                168,
+                249,
+                249,
+                115,
+                87,
+                84,
+                27,
+                119,
+                113,
+                187,
+                186,
+                199,
+                34,
+                34,
+                134,
+                224,
+                237,
+                212,
+                96
+              ]
+            }
+          },
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "request",
+          "docs": [
+            "Refunds rent to `beneficiary`, which must be the request's recorded",
+            "beneficiary (the original rent payer)."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  113,
+                  117,
+                  101,
+                  115,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "beneficiary",
+          "writable": true,
+          "relations": [
+            "request"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "fund_redemption",
+      "discriminator": [
+        63,
+        242,
+        144,
+        13,
+        107,
+        199,
+        16,
+        159
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  109,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                196,
+                11,
+                7,
+                132,
+                28,
+                242,
+                159,
+                208,
+                109,
+                62,
+                38,
+                181,
+                145,
+                168,
+                249,
+                249,
+                115,
+                87,
+                84,
+                27,
+                119,
+                113,
+                187,
+                186,
+                199,
+                34,
+                34,
+                134,
+                224,
+                237,
+                212,
+                96
+              ]
+            }
+          },
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "request",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  113,
+                  117,
+                  101,
+                  115,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "quote_mint"
+        },
+        {
+          "name": "treasurer",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "treasurer_quote",
+          "writable": true
+        },
+        {
+          "name": "escrow_quote",
+          "docs": [
+            "Pinned to the canonical escrow-quote ATA of the redemption PDA."
+          ],
+          "writable": true
+        },
+        {
+          "name": "beneficiary_record"
+        },
+        {
+          "name": "quote_token_program",
+          "docs": [
+            "Pinned to the quote mint's own owning program."
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "_id",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  109,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "rwa_mint"
+        },
+        {
+          "name": "quote_mint"
+        },
+        {
+          "name": "strategy",
+          "docs": [
+            "Pinned to the canonical pricing `Strategy` PDA."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                150,
+                133,
+                68,
+                88,
+                241,
+                156,
+                178,
+                8,
+                111,
+                7,
+                97,
+                220,
+                183,
+                189,
+                69,
+                121,
+                119,
+                234,
+                187,
+                95,
+                78,
+                249,
+                147,
+                133,
+                96,
+                67,
+                50,
+                210,
+                81,
+                167,
+                79,
+                112
+              ]
+            }
+          }
+        },
+        {
+          "name": "registry"
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "program",
+          "address": "32J24AMuuocveSVofvbqWS4HrspAKqsNp7xnrtWw1uFY"
+        },
+        {
+          "name": "program_data"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "admin",
+          "type": "pubkey"
+        },
+        {
+          "name": "treasurer",
+          "type": "pubkey"
+        },
+        {
+          "name": "redemption_manager",
+          "type": "pubkey"
+        },
+        {
+          "name": "vault_authority",
+          "type": "pubkey"
+        },
+        {
+          "name": "redemption_timeout",
+          "type": "u64"
+        },
+        {
+          "name": "quote_decimals",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "propose_admin",
+      "docs": [
+        "Two-step admin rotation (propose). Rejects a zero pending admin",
+        "and emits the proposal."
+      ],
+      "discriminator": [
+        121,
+        214,
+        199,
+        212,
+        87,
+        39,
+        117,
+        234
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  109,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "reject_redemption",
+      "discriminator": [
+        137,
+        154,
+        82,
+        200,
+        41,
+        45,
+        174,
+        61
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  109,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                196,
+                11,
+                7,
+                132,
+                28,
+                242,
+                159,
+                208,
+                109,
+                62,
+                38,
+                181,
+                145,
+                168,
+                249,
+                249,
+                115,
+                87,
+                84,
+                27,
+                119,
+                113,
+                187,
+                186,
+                199,
+                34,
+                34,
+                134,
+                224,
+                237,
+                212,
+                96
+              ]
+            }
+          },
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "request",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  113,
+                  117,
+                  101,
+                  115,
+                  116
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rwa_mint",
+          "docs": [
+            "Read-only (see `RequestRedemption`)."
+          ]
+        },
+        {
+          "name": "escrow_token",
+          "docs": [
+            "Pinned to the canonical escrow ATA of the redemption PDA."
+          ],
+          "writable": true
+        },
+        {
+          "name": "beneficiary_token",
+          "writable": true
+        },
+        {
+          "name": "beneficiary_record"
+        },
+        {
+          "name": "redemption_manager",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "rwa_token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        }
+      ],
+      "args": [
+        {
+          "name": "_id",
+          "type": "u64"
+        },
+        {
+          "name": "reason_code",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "request_redemption",
+      "discriminator": [
+        14,
+        62,
+        182,
+        237,
+        59,
+        79,
+        149,
+        22
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  109,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                196,
+                11,
+                7,
+                132,
+                28,
+                242,
+                159,
+                208,
+                109,
+                62,
+                38,
+                181,
+                145,
+                168,
+                249,
+                249,
+                115,
+                87,
+                84,
+                27,
+                119,
+                113,
+                187,
+                186,
+                199,
+                34,
+                34,
+                134,
+                224,
+                237,
+                212,
+                96
+              ]
+            }
+          },
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "strategy",
+          "docs": [
+            "Pinned to the canonical pricing `Strategy` PDA."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                150,
+                133,
+                68,
+                88,
+                241,
+                156,
+                178,
+                8,
+                111,
+                7,
+                97,
+                220,
+                183,
+                189,
+                69,
+                121,
+                119,
+                234,
+                187,
+                95,
+                78,
+                249,
+                147,
+                133,
+                96,
+                67,
+                50,
+                210,
+                81,
+                167,
+                79,
+                112
+              ]
+            }
+          },
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "rwa_mint",
+          "docs": [
+            "Read-only — `transfer_checked` takes the mint read-only, so a write",
+            "lock here would needlessly serialize every redemption against the mint."
+          ]
+        },
+        {
+          "name": "request",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  113,
+                  117,
+                  101,
+                  115,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "config.next_id",
+                "account": "Config"
+              }
+            ]
+          }
+        },
+        {
+          "name": "beneficiary",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "beneficiary_token",
+          "writable": true
+        },
+        {
+          "name": "escrow_token",
+          "docs": [
+            "Pinned to the canonical escrow ATA of the redemption PDA."
+          ],
+          "writable": true
+        },
+        {
+          "name": "beneficiary_record"
+        },
+        {
+          "name": "rwa_token_program",
+          "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "rwa_amount",
+          "type": "u64"
+        },
+        {
+          "name": "min_quote_out",
+          "type": "u64"
+        },
+        {
+          "name": "deadline",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "set_redemption_manager",
+      "docs": [
+        "Rotate the redemption manager."
+      ],
+      "discriminator": [
+        14,
+        173,
+        148,
+        95,
+        82,
+        64,
+        180,
+        187
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  109,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_manager",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_treasurer",
+      "docs": [
+        "Rotate the treasurer."
+      ],
+      "discriminator": [
+        100,
+        87,
+        30,
+        190,
+        191,
+        14,
+        164,
+        98
+      ],
+      "accounts": [
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  100,
+                  101,
+                  109,
+                  112,
+                  116,
+                  105,
+                  111,
+                  110,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_treasurer",
+          "type": "pubkey"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    },
+    {
+      "name": "RedemptionRequest",
+      "discriminator": [
+        117,
+        157,
+        214,
+        214,
+        64,
+        160,
+        31,
+        58
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AdminChanged",
+      "discriminator": [
+        232,
+        34,
+        31,
+        226,
+        62,
+        18,
+        19,
+        114
+      ]
+    },
+    {
+      "name": "AdminProposed",
+      "discriminator": [
+        129,
+        249,
+        226,
+        227,
+        199,
+        82,
+        110,
+        243
+      ]
+    },
+    {
+      "name": "AdminTransferCancelled",
+      "discriminator": [
+        93,
+        23,
+        69,
+        55,
+        216,
+        128,
+        106,
+        56
+      ]
+    },
+    {
+      "name": "RedemptionCancelled",
+      "discriminator": [
+        22,
+        106,
+        118,
+        26,
+        83,
+        110,
+        71,
+        174
+      ]
+    },
+    {
+      "name": "RedemptionCompleted",
+      "discriminator": [
+        46,
+        189,
+        147,
+        218,
+        232,
+        71,
+        143,
+        119
+      ]
+    },
+    {
+      "name": "RedemptionFunded",
+      "discriminator": [
+        146,
+        26,
+        237,
+        133,
+        155,
+        44,
+        150,
+        215
+      ]
+    },
+    {
+      "name": "RedemptionRejected",
+      "discriminator": [
+        54,
+        77,
+        16,
+        124,
+        240,
+        23,
+        1,
+        53
+      ]
+    },
+    {
+      "name": "RedemptionRequested",
+      "discriminator": [
+        245,
+        155,
+        98,
+        131,
+        210,
+        25,
+        137,
+        146
+      ]
+    },
+    {
+      "name": "RequestClosed",
+      "discriminator": [
+        59,
+        172,
+        99,
+        75,
+        9,
+        19,
+        226,
+        188
+      ]
+    },
+    {
+      "name": "RoleChanged",
+      "discriminator": [
+        85,
+        88,
+        130,
+        5,
+        125,
+        143,
+        206,
+        240
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "ZeroAddress",
+      "msg": "zero address"
+    },
+    {
+      "code": 6001,
+      "name": "ProjectPaused",
+      "msg": "project is paused"
+    },
+    {
+      "code": 6002,
+      "name": "CallerNotAllowed",
+      "msg": "caller is not allowed"
+    },
+    {
+      "code": 6003,
+      "name": "BeneficiaryNotAllowed",
+      "msg": "beneficiary is not allowed"
+    },
+    {
+      "code": 6004,
+      "name": "ZeroAmount",
+      "msg": "amount must be non-zero"
+    },
+    {
+      "code": 6005,
+      "name": "DeadlineExpired",
+      "msg": "deadline expired"
+    },
+    {
+      "code": 6006,
+      "name": "ZeroQuote",
+      "msg": "quote is zero"
+    },
+    {
+      "code": 6007,
+      "name": "QuoteBelowMin",
+      "msg": "quote below min"
+    },
+    {
+      "code": 6008,
+      "name": "ZeroReasonCode",
+      "msg": "reason code must be non-zero"
+    },
+    {
+      "code": 6009,
+      "name": "NotPending",
+      "msg": "request is not pending"
+    },
+    {
+      "code": 6010,
+      "name": "NotFunded",
+      "msg": "request is not funded"
+    },
+    {
+      "code": 6011,
+      "name": "NotBeneficiary",
+      "msg": "caller is not the beneficiary"
+    },
+    {
+      "code": 6012,
+      "name": "TimeoutNotReached",
+      "msg": "redemption timeout not reached"
+    },
+    {
+      "code": 6013,
+      "name": "QuoteDeltaMismatch",
+      "msg": "quote delta mismatch"
+    },
+    {
+      "code": 6014,
+      "name": "PricingFailed",
+      "msg": "pricing failed"
+    },
+    {
+      "code": 6015,
+      "name": "Overflow",
+      "msg": "id overflow"
+    },
+    {
+      "code": 6016,
+      "name": "BadStatus",
+      "msg": "bad status byte"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidTimeout",
+      "msg": "redemption timeout must be within [1 day, 365 days]"
+    },
+    {
+      "code": 6018,
+      "name": "RequestNotTerminal",
+      "msg": "request is not in a terminal state"
+    },
+    {
+      "code": 6019,
+      "name": "RecordMismatch",
+      "msg": "compliance record account does not match its owner"
+    },
+    {
+      "code": 6020,
+      "name": "WrongRegistry",
+      "msg": "wrong registry account"
+    },
+    {
+      "code": 6021,
+      "name": "WrongStrategy",
+      "msg": "wrong strategy account"
+    },
+    {
+      "code": 6022,
+      "name": "WrongMint",
+      "msg": "wrong mint account"
+    },
+    {
+      "code": 6023,
+      "name": "NotTreasurer",
+      "msg": "caller is not the treasurer"
+    },
+    {
+      "code": 6024,
+      "name": "NotRedemptionManager",
+      "msg": "caller is not the redemption manager"
+    },
+    {
+      "code": 6025,
+      "name": "NotAdmin",
+      "msg": "caller is not the admin"
+    },
+    {
+      "code": 6026,
+      "name": "NotPendingAdmin",
+      "msg": "caller is not the pending admin"
+    },
+    {
+      "code": 6027,
+      "name": "NoPendingAdmin",
+      "msg": "no pending admin transfer to accept"
+    },
+    {
+      "code": 6028,
+      "name": "NotUpgradeAuthority",
+      "msg": "caller is not the program upgrade authority"
+    },
+    {
+      "code": 6029,
+      "name": "NotFinalized",
+      "msg": "deployment is not finalized"
+    },
+    {
+      "code": 6030,
+      "name": "UnsafeMint",
+      "msg": "configured RWA mint is unsafe (not Token-2022 / wrong hook / disallowed extension)"
+    },
+    {
+      "code": 6031,
+      "name": "UnsafeQuoteMint",
+      "msg": "configured quote mint is unsafe (wrong program / disallowed extension)"
+    },
+    {
+      "code": 6032,
+      "name": "MintQuoteSame",
+      "msg": "RWA mint and quote mint must be different"
+    },
+    {
+      "code": 6033,
+      "name": "NotCanonicalAta",
+      "msg": "token account is not the canonical ATA"
+    },
+    {
+      "code": 6034,
+      "name": "WrongTokenProgram",
+      "msg": "wrong token program for the RWA leg"
+    },
+    {
+      "code": 6035,
+      "name": "DecimalsMismatch",
+      "msg": "pricing decimals do not match the RWA mint"
+    },
+    {
+      "code": 6036,
+      "name": "QuoteDecimalsMismatch",
+      "msg": "quote mint decimals do not match the configured price scale"
+    },
+    {
+      "code": 6037,
+      "name": "RwaDeltaMismatch",
+      "msg": "RWA transfer delta mismatch"
+    }
+  ],
+  "types": [
+    {
+      "name": "AdminChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "previous",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AdminProposed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "new_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AdminTransferCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "cancelled",
+            "type": "pubkey"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasurer",
+            "type": "pubkey"
+          },
+          {
+            "name": "redemption_manager",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "rwa_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_decimals",
+            "docs": [
+              "The quote mint's decimals, bound at `initialize` to the price scale."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "strategy",
+            "type": "pubkey"
+          },
+          {
+            "name": "registry",
+            "type": "pubkey"
+          },
+          {
+            "name": "redemption_timeout",
+            "type": "u64"
+          },
+          {
+            "name": "next_id",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RedemptionCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "beneficiary",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RedemptionCompleted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "beneficiary",
+            "type": "pubkey"
+          },
+          {
+            "name": "rwa_amount",
+            "type": "u64"
+          },
+          {
+            "name": "quote_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RedemptionFunded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "funder",
+            "type": "pubkey"
+          },
+          {
+            "name": "quote_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RedemptionRejected",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "reason_code",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RedemptionRequest",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "beneficiary",
+            "type": "pubkey"
+          },
+          {
+            "name": "rwa_amount",
+            "type": "u64"
+          },
+          {
+            "name": "quote_amount",
+            "type": "u64"
+          },
+          {
+            "name": "created_at",
+            "type": "u64"
+          },
+          {
+            "name": "status",
+            "docs": [
+              "redemption_core::RedemptionStatus as u8."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RedemptionRequested",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "beneficiary",
+            "type": "pubkey"
+          },
+          {
+            "name": "rwa_amount",
+            "type": "u64"
+          },
+          {
+            "name": "quote_amount",
+            "type": "u64"
+          },
+          {
+            "name": "created_at",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Registry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "compliance_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "pauser",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "escrow",
+            "type": "pubkey"
+          },
+          {
+            "name": "supply_controller",
+            "docs": [
+              "Supply-controller program id, pinned at `set_system_addresses`; the",
+              "authority behind the `finalize` CPI that flips `finalized`."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "rwa_mint",
+            "docs": [
+              "The RWA mint, pinned at `set_system_addresses`. The transfer hook —",
+              "the single compliance chokepoint — asserts the mint it is invoked for equals",
+              "this, so the guarantee no longer depends only on the handler being",
+              "side-effect-free for a foreign mint that points its hook extension here."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "system_set",
+            "type": "bool"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "finalized",
+            "docs": [
+              "Global go-live flag; set once cross-program wiring is verified."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RequestClosed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "beneficiary",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RoleChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "role",
+            "type": "u8"
+          },
+          {
+            "name": "previous",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_value",
+            "type": "pubkey"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Strategy",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pricer",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_decimals",
+            "type": "u8"
+          },
+          {
+            "name": "purchase_price",
+            "type": "u64"
+          },
+          {
+            "name": "redemption_price",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

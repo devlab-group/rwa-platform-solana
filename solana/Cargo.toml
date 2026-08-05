@@ -1,0 +1,29 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/pricing-math",
+    "crates/compliance-core",
+    "crates/redemption-core",
+    "crates/attestation",
+    "programs/rwa-compliance",
+    "programs/rwa-pricing",
+    "programs/rwa-transfer-hook",
+    "programs/rwa-supply-controller",
+    "programs/rwa-vault",
+    "programs/rwa-redemption",
+]
+# The programs are full members: the committed root Cargo.lock covers all
+# six SBF builds and the [profile.release] below (overflow-checks) governs them.
+# Host `cargo test` only touches the four crates/* — run it with `-p` per crate
+# (see `make solana-test`) so it never drags in the Solana runtime toolchain.
+
+# The four `crates/*` members are plain host-buildable Rust with no Solana
+# runtime dependency, so `cargo test -p pricing-math` (etc.) runs the critical
+# arithmetic / state-machine / attestation logic on any machine — no SBF
+# toolchain or validator required. The `programs/*` members are Anchor programs
+# that only build under `cargo-build-sbf` / `anchor build`.
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1

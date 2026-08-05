@@ -1,0 +1,22 @@
+[package]
+name = "rwa-pricing"
+version = "0.1.0"
+edition = "2021"
+description = "Fixed purchase/redemption price strategy (FixedPriceStrategy.sol on Solana)"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "rwa_pricing"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "1.1.2"
+pricing-math = { path = "../../crates/pricing-math" }

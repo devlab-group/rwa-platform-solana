@@ -1,0 +1,248 @@
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [master]
+  # The full Anchor integration suite (validator + Token-2022 v11 build) is far
+  # too slow for the per-PR gate, so it runs on a weekly schedule and on demand
+  # instead — see the `solana-anchor` job. The SBF-compile-only
+  # `solana-anchor-build` stays the blocking per-PR gate.
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  signer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.25" }
+      - run: cd signer && go vet ./... && go test -race ./...
+
+  server:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports: ["27017:27017"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.25" }
+      - run: cd server && go vet ./... && go test -race ./...
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      # Match `make ci` (Makefile web-test): typecheck + test + build, not just build.
+      - run: cd web && npm ci && npm run typecheck && npm test && npm run build
+
+  # Standalone investor example SPA — self-contained, not embedded by the server.
+  # Gated in CI so the reference stays green as the shared code it was forked from
+  # evolves (Makefile investor-web-test).
+  investor-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - run: cd investor-web && npm ci && npm run typecheck && npm test && npm run build
+
+  # Fast PR gate for the Solana port: the host-testable core crates (pricing,
+  # attestation incl. the frozen secp256k1 golden, compliance, redemption state
+  # machine) plus formatting. No SBF toolchain needed — this is the same
+  # `make solana-test` that runs in `make ci`. The heavier `anchor build`
+  # (program SBF compile) is the scheduled `solana-anchor` job below.
+  solana:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      # Reproducible (--locked) host tests of the four core crates only; the SBF
+      # programs are exercised by the `solana-anchor` job below.
+      - run: cd solana && cargo fmt --check && cargo test --locked -p pricing-math -p compliance-core -p redemption-core -p attestation
+
+  # PR-blocking SBF *build* of every Anchor program. This installs
+  # the Agave 4.x platform tools + Anchor 1.1.2 and runs `anchor build`, which
+  # SBF-compiles all six programs and catches the class of failures the host
+  # `cargo test` above cannot — anchor `try_accounts` codegen, account-constraint
+  # errors, and 4 KB-stack overflows. It does NOT stand up a validator or run the
+  # economic flow (that stays on the scheduled `solana-anchor` job below), so it is
+  # cheap enough for the per-PR critical path.
+  solana-anchor-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: install agave 4.1.1 + anchor 1.1.2 (pinned)
+        run: |
+          # Pin the Agave platform tools to a fixed version — the floating
+          # `stable` channel's sBPF output drifted from build to build.
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+          export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+          agave-install init 4.1.1
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+          cargo install --git https://github.com/coral-xyz/anchor --tag v1.1.2 anchor-cli --locked
+      - name: anchor build (SBF compile, 0 stack overflows)
+        run: cd solana && anchor build && anchor keys sync && anchor build
+      # Record each program's sBPF hash so a deployed program id can be tied back
+      # to this source under the pinned toolchain above. Goes in the deployment
+      # manifest and is re-checked against the cluster after deploy.
+      - name: record program build hashes
+        run: |
+          cd solana
+          for p in rwa_compliance rwa_pricing rwa_transfer_hook rwa_supply_controller rwa_vault rwa_redemption; do
+            sha256sum "target/deploy/$p.so"
+          done | tee program-hashes.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: solana-program-hashes
+          path: solana/program-hashes.txt
+
+  # Heavier Solana SBF build + integration tests — deliberately not on the per-PR
+  # critical path: installs the Agave 4.x platform tools +
+  # Anchor 1.1.2, compiles every program to SBF, and runs the full Anchor TS suite
+  # (bootstrap authorization, finalize cross-wiring gate, hook resolution,
+  # mint/buy/request/fund/claim, timeout-cancel-while-paused, burn handshake, replay)
+  # plus the negatives (freeze-authority mint, mutable-account receipt, direct hook
+  # Execute, double-finalize) and the direct-holder-burn rejection.
+  # The RWA mint uses the Token-2022 v11 permissioned-burn extension, so the bundled
+  # validator's Token-2022 is not sufficient — the job builds Token-2022 v11 from the
+  # crate source and injects it. Runs weekly and on demand.
+  solana-anchor:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - name: install agave 4.1.1 + anchor 1.1.2 (pinned)
+        run: |
+          # Pin the Agave platform tools to a fixed version — the floating
+          # `stable` channel's sBPF output drifted from build to build.
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+          export PATH="$HOME/.local/share/solana/install/active_release/bin:$PATH"
+          agave-install init 4.1.1
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+          cargo install --git https://github.com/coral-xyz/anchor --tag v1.1.2 anchor-cli --locked
+      - name: build Token-2022 v11 program (permissioned burn)
+        run: |
+          tmp="$(mktemp -d)"; ( cd "$tmp" && cargo new --lib fetch >/dev/null \
+            && cd fetch && echo 'spl-token-2022 = "=11.0.0"' >> Cargo.toml && cargo fetch )
+          src="$(ls -d "$HOME"/.cargo/registry/src/*/spl-token-2022-11.0.0)"
+          cp -r "$src" "$tmp/tok22" && ( cd "$tmp/tok22" && cargo-build-sbf )
+          echo "TOK22_V11=$tmp/tok22/target/deploy/spl_token_2022.so" >> "$GITHUB_ENV"
+      - name: build + deploy + integration test
+        run: |
+          cd solana
+          npm ci                       # frozen install from the committed lockfile
+          anchor build                 # generate program keypairs + IDLs
+          anchor keys sync             # align declare_id!/Anchor.toml to those keypairs
+          anchor build                 # rebuild with the synced ids
+          solana-keygen new --no-bip39-passphrase --silent --outfile "$HOME/.config/solana/id.json"
+          # validator with the v11 Token-2022 injected; SIMD-0500 off so the v0
+          # programs can be deployed via the upgradeable loader.
+          solana-test-validator --reset --quiet \
+            --bpf-program TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb "$TOK22_V11" \
+            --deactivate-feature B8JJXCy5amZyWG9r7EnUYLwzXSXTxG7GZ1qZ1qggo83g &
+          for i in $(seq 1 40); do solana cluster-version -u localhost >/dev/null 2>&1 && break; sleep 3; done
+          solana airdrop 100 -u localhost
+          for p in rwa_compliance rwa_pricing rwa_transfer_hook rwa_supply_controller rwa_vault rwa_redemption; do
+            solana program deploy "target/deploy/$p.so" --program-id "target/deploy/$p-keypair.json" -u localhost --use-rpc
+          done
+          ANCHOR_PROVIDER_URL=http://127.0.0.1:8899 ANCHOR_WALLET="$HOME/.config/solana/id.json" \
+            npx ts-mocha -p ./tsconfig.json -t 1000000 tests/fullflow.ts
+
+  # The platform binary embeds web/dist via go:embed, but the built SPA is no longer
+  # committed — only dist/.gitkeep is tracked and assets/ are gitignored, so it's
+  # rebuilt at release time. There's nothing to diff for drift, so instead this job
+  # builds web/ fresh, embeds it, and compiles the release binary to prove go:embed
+  # resolves the real assets. It also checks that the old long-lived API-key storage
+  # never ships in the bundle or the binary.
+  embed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.25" }
+      - name: build web
+        run: cd web && npm ci && npm run build
+      # The old long-lived operator-API-key localStorage design must never ship in the
+      # embedded SPA. Assert that neither the checked-in embedded dist nor the freshly
+      # built bundle contains it, so a stale embed that reintroduced it fails here.
+      - name: assert embedded SPA has no long-lived API-key storage
+        run: |
+          for dir in server/internal/webui/dist web/dist; do
+            if grep -rlE "rwa\.apiKey|apiKey.*localStorage|localStorage.*apiKey" "$dir" 2>/dev/null; then
+              echo "FAIL: $dir still contains long-lived API-key storage"; exit 1
+            fi
+          done
+      - name: compile release binary with fresh embed (binary-embed smoke)
+        run: |
+          rm -rf server/internal/webui/dist
+          mkdir -p server/internal/webui/dist
+          cp -r web/dist/. server/internal/webui/dist/
+          cd server && go build -o /tmp/platform ./cmd/platform
+          test -x /tmp/platform
+      # Same check against the linked binary: the API-key storage strings must not be
+      # present in the release binary's embedded bytes either.
+      - name: assert release binary embeds no API-key storage
+        run: |
+          if strings /tmp/platform | grep -qE "rwa\.apiKey"; then
+            echo "FAIL: release binary embeds rwa.apiKey storage"; exit 1
+          fi
+
+  # Dependency vulnerability scan on every PR. Fail-closed — reachable advisories
+  # block the build. govulncheck ./... performs call-graph reachability analysis, so
+  # an unreachable transitive advisory does not fail the build; a reachable one does.
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "22" }
+      - name: npm audit (web, production deps)
+        run: cd web && npm ci && npm audit --omit=dev --audit-level=high
+      - uses: dtolnay/rust-toolchain@stable
+      # Scan the solana/ deployment + on-chain dependency graphs. `cargo audit`
+      # covers the Rust/SBF graph, failing closed on any vulnerability.
+      # The npm tree's high/moderate advisories (bigint-buffer, uuid) are
+      # unpatchable-upstream transitives of @solana/web3.js in off-chain deployment
+      # tooling that never ships in a program — the same accepted class as web/'s
+      # js-yaml residual — so the npm gate fails only on a *critical* (there are
+      # none today) while still reporting the rest for the record.
+      - name: cargo audit (solana Rust/SBF graph)
+        run: |
+          cargo install cargo-audit --locked
+          cd solana && cargo audit
+      - name: npm audit (solana tooling)
+        run: |
+          cd solana && npm ci
+          npm audit --omit=dev || true                       # full report for the record
+          npm audit --omit=dev --audit-level=critical         # fail-closed on criticals
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.25" }
+      - name: govulncheck (server + signer)
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          (cd server && govulncheck ./...)
+          (cd signer && govulncheck ./...)
+      # Emit CycloneDX SBOMs for the release artifacts so a shipped binary/bundle has
+      # a reviewable dependency inventory. Non-blocking (govulncheck above is the
+      # fail-closed gate); uploaded for the release record.
+      - name: SBOM (Go modules + web)
+        run: |
+          (cd server && go run github.com/CycloneDX/cyclonedx-gomod/cmd/cyclonedx-gomod@latest app -json -output /tmp/sbom-server.json -main cmd/platform .)
+          (cd signer && go run github.com/CycloneDX/cyclonedx-gomod/cmd/cyclonedx-gomod@latest app -json -output /tmp/sbom-signer.json -main cmd/signer .)
+          (cd web && npm ci && npm sbom --sbom-format cyclonedx > /tmp/sbom-web.json)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sboms
+          path: /tmp/sbom-*.json

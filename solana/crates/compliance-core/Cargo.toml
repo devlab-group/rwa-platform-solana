@@ -1,0 +1,9 @@
+[package]
+name = "compliance-core"
+version = "0.1.0"
+edition = "2021"
+description = "Allowlist + expiry evaluation, ported from ComplianceRegistry.sol"
+license = "MIT"
+
+[lib]
+crate-type = ["lib"]

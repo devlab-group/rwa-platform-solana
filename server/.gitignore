@@ -1,0 +1,23 @@
+# The built web SPA bundle is produced at release time (make platform), which
+# copies web/dist (index.html + hashed assets) over internal/webui/dist. That
+# output is generated, not source — keep all of it out of git so a build
+# never dirties a tracked file. Only the tracked placeholder
+# internal/webui/dist/.gitkeep is kept, so `go:embed all:dist` (the `all:`
+# prefix embeds dotfiles) always resolves on a bare checkout.
+internal/webui/dist/*
+!internal/webui/dist/.gitkeep
+
+# Compiled binaries (platform, opsctl, reindex) build here.
+bin/
+
+# A stray `go build ./cmd/...` run outside `make platform`/bin/ lands its
+# binary straight in server/ (audit-8 L-03: a 38MB unstripped ELF with full
+# debug symbols and absolute build paths sat here, untracked AND unignored
+# — one `git add -A` away from permanent repo history). Ignore the known
+# binary names at the module root so that mistake can't be re-committed;
+# the real build output always belongs in bin/ (see the make platform flow).
+/platform
+/opsctl
+/reindex
+
+config.yaml

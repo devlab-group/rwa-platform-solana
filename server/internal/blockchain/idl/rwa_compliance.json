@@ -1,0 +1,1220 @@
+{
+  "address": "ECGfTwvG1JaAxJ11ub7HjgTB9KJFH4HSDUJR7reFeVVH",
+  "metadata": {
+    "name": "rwa_compliance",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Wallet allowlist + expiry + project pause registry (ComplianceRegistry.sol on Solana)"
+  },
+  "instructions": [
+    {
+      "name": "accept_admin",
+      "docs": [
+        "Two-step admin rotation (accept) — the pending admin claims the role."
+      ],
+      "discriminator": [
+        112,
+        42,
+        45,
+        90,
+        116,
+        181,
+        13,
+        170
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "new_admin",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "cancel_admin_transfer",
+      "docs": [
+        "Withdraw a pending admin transfer (current admin only), so a fat-fingered",
+        "`propose_admin` is recoverable state."
+      ],
+      "discriminator": [
+        38,
+        131,
+        157,
+        31,
+        240,
+        137,
+        44,
+        215
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "registry"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize",
+      "docs": [
+        "Create the singleton `Registry`. `deployer` (signer) becomes the initial",
+        "admin able to pin system addresses; roles are set explicitly."
+      ],
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "program",
+          "address": "ECGfTwvG1JaAxJ11ub7HjgTB9KJFH4HSDUJR7reFeVVH"
+        },
+        {
+          "name": "program_data"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "admin",
+          "type": "pubkey"
+        },
+        {
+          "name": "compliance_authority",
+          "type": "pubkey"
+        },
+        {
+          "name": "pauser",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "pause",
+      "docs": [
+        "Project-wide emergency pause. Gated to the pauser."
+      ],
+      "discriminator": [
+        211,
+        22,
+        221,
+        251,
+        74,
+        121,
+        193,
+        47
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pauser",
+          "signer": true,
+          "relations": [
+            "registry"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "propose_admin",
+      "docs": [
+        "Two-step admin rotation (propose) — mirrors AccessControlDefaultAdminRules.",
+        "Rejects a zero pending admin (an unacceptable, unwithdrawable proposal on an",
+        "otherwise-reversible handshake) and emits the proposal."
+      ],
+      "discriminator": [
+        121,
+        214,
+        199,
+        212,
+        87,
+        39,
+        117,
+        234
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "registry"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_compliance_authority",
+      "discriminator": [
+        107,
+        141,
+        114,
+        171,
+        0,
+        68,
+        105,
+        10
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "registry"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_authority",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_finalized",
+      "docs": [
+        "Flip the deployment's global `finalized` flag. Every asset-moving",
+        "instruction (mint, burn, buy, redemption request/fund/reject/cancel/claim)",
+        "reads this registry already and refuses to run until it is set, so nothing",
+        "goes live before the cross-program wiring has been verified.",
+        "",
+        "This may ONLY be reached as a CPI from `rwa-supply-controller::finalize`,",
+        "which signs as the supply config PDA (`supply_config`). We re-derive that PDA",
+        "from the supply-controller id pinned in the Registry at `set_system_addresses`",
+        "and require it to be the signer.",
+        "",
+        "Two further guards make the flag deployer-bound and un-brickable:",
+        "- The `SetFinalized` context requires this compliance program's own upgrade",
+        "authority to equal the registry admin signer, so — regardless of what",
+        "supply-controller id was pinned — a registry admin who is *not* the deployer",
+        "cannot forge go-live by pinning a look-alike controller. That closes the",
+        "role-boundary gap when admin and deployer are separated.",
+        "- The transition is idempotent: an already-set flag returns `Ok` rather than",
+        "erroring, so a stray pre-set can never brick the real `finalize` (which",
+        "keeps its own one-shot `Config.finalized` guard)."
+      ],
+      "discriminator": [
+        1,
+        50,
+        240,
+        34,
+        28,
+        108,
+        250,
+        156
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "registry"
+          ]
+        },
+        {
+          "name": "supply_config",
+          "docs": [
+            "The supply-controller config PDA, signing via `finalize`'s CPI seeds.",
+            "Verified in-handler against the canonical PDA of the pinned supply-controller",
+            "id, so this instruction is reachable only through `finalize`."
+          ],
+          "signer": true
+        },
+        {
+          "name": "program",
+          "address": "ECGfTwvG1JaAxJ11ub7HjgTB9KJFH4HSDUJR7reFeVVH"
+        },
+        {
+          "name": "program_data"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "set_pauser",
+      "discriminator": [
+        22,
+        198,
+        152,
+        61,
+        2,
+        13,
+        145,
+        238
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "registry"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_pauser",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_status",
+      "docs": [
+        "Set (or create) a wallet's compliance record. Gated to the compliance",
+        "authority. `status`: 1=Allowed, 2=Blocked (0=Unknown clears to disallowed)."
+      ],
+      "discriminator": [
+        181,
+        184,
+        224,
+        203,
+        193,
+        29,
+        177,
+        224
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "signer": true
+        },
+        {
+          "name": "wallet"
+        },
+        {
+          "name": "record",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  111,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "wallet"
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "status",
+          "type": "u8"
+        },
+        {
+          "name": "valid_until",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "set_system_addresses",
+      "docs": [
+        "Pin the Vault + RedemptionEscrow *authority* pubkeys, the supply-controller",
+        "program id, and the RWA mint, **atomically**",
+        "creating and permanently allowlisting both records (`Allowed`,",
+        "`valid_until = 0`) in the same transaction. This closes the window where a",
+        "pinned system address could already be Unknown/Blocked or expiring. After",
+        "`set_status` can never give either a non-Allowed status or an expiry, and the",
+        "transfer hook uses `escrow` for its pause bypass.",
+        "",
+        "Gated on `!finalized`, not `!system_set`, so a bootstrap typo in any of",
+        "these permanent pins is correctable by re-running this instruction any time",
+        "before go-live. `finalize` freezes everything, which is the property that",
+        "actually matters. The supply-controller is taken as an *executable* account,",
+        "so a non-program value cannot be pinned."
+      ],
+      "discriminator": [
+        182,
+        142,
+        91,
+        255,
+        177,
+        206,
+        198,
+        180
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "registry"
+          ]
+        },
+        {
+          "name": "vault"
+        },
+        {
+          "name": "escrow"
+        },
+        {
+          "name": "supply_controller_program",
+          "docs": [
+            "The supply-controller program, pinned by id. Required executable so a",
+            "non-program value (a typo) can never be stored as the controller."
+          ]
+        },
+        {
+          "name": "rwa_mint",
+          "docs": [
+            "The RWA mint, pinned by id for the transfer hook's mint check."
+          ]
+        },
+        {
+          "name": "vault_record",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  111,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "vault"
+              }
+            ]
+          }
+        },
+        {
+          "name": "escrow_record",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  111,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "escrow"
+              }
+            ]
+          }
+        },
+        {
+          "name": "prev_vault_record",
+          "docs": [
+            "The record of the vault pin being superseded, so a corrective call can",
+            "atomically clear it. Seeded from the registry's CURRENT",
+            "`vault` (the old pin, read before overwrite), so the caller cannot pass a",
+            "look-alike. Optional: pass `None` on the first call, or when the vault pin is",
+            "unchanged (`clear_superseded` requires it only when the pin actually moves to",
+            "a non-system address)."
+          ],
+          "writable": true,
+          "optional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  111,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "registry.vault",
+                "account": "Registry"
+              }
+            ]
+          }
+        },
+        {
+          "name": "prev_escrow_record",
+          "docs": [
+            "The record of the escrow pin being superseded (see above)."
+          ],
+          "writable": true,
+          "optional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  99,
+                  111,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "registry.escrow",
+                "account": "Registry"
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "unpause",
+      "discriminator": [
+        169,
+        144,
+        4,
+        38,
+        10,
+        141,
+        188,
+        255
+      ],
+      "accounts": [
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pauser",
+          "signer": true,
+          "relations": [
+            "registry"
+          ]
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "ComplianceRecord",
+      "discriminator": [
+        147,
+        228,
+        164,
+        27,
+        251,
+        44,
+        67,
+        185
+      ]
+    },
+    {
+      "name": "Registry",
+      "discriminator": [
+        47,
+        174,
+        110,
+        246,
+        184,
+        182,
+        252,
+        218
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AdminChanged",
+      "discriminator": [
+        232,
+        34,
+        31,
+        226,
+        62,
+        18,
+        19,
+        114
+      ]
+    },
+    {
+      "name": "AdminProposed",
+      "discriminator": [
+        129,
+        249,
+        226,
+        227,
+        199,
+        82,
+        110,
+        243
+      ]
+    },
+    {
+      "name": "AdminTransferCancelled",
+      "discriminator": [
+        93,
+        23,
+        69,
+        55,
+        216,
+        128,
+        106,
+        56
+      ]
+    },
+    {
+      "name": "Finalized",
+      "discriminator": [
+        4,
+        77,
+        242,
+        80,
+        20,
+        152,
+        247,
+        252
+      ]
+    },
+    {
+      "name": "PauseSet",
+      "discriminator": [
+        175,
+        57,
+        198,
+        136,
+        192,
+        66,
+        204,
+        73
+      ]
+    },
+    {
+      "name": "RoleChanged",
+      "discriminator": [
+        85,
+        88,
+        130,
+        5,
+        125,
+        143,
+        206,
+        240
+      ]
+    },
+    {
+      "name": "StatusChanged",
+      "discriminator": [
+        146,
+        235,
+        222,
+        125,
+        145,
+        246,
+        34,
+        240
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "ZeroAddress",
+      "msg": "zero address"
+    },
+    {
+      "code": 6001,
+      "name": "NotAdmin",
+      "msg": "caller is not the admin"
+    },
+    {
+      "code": 6002,
+      "name": "NotPendingAdmin",
+      "msg": "caller is not the pending admin"
+    },
+    {
+      "code": 6003,
+      "name": "NoPendingAdmin",
+      "msg": "no pending admin transfer to accept"
+    },
+    {
+      "code": 6004,
+      "name": "NotComplianceAuthority",
+      "msg": "caller is not the compliance authority"
+    },
+    {
+      "code": 6005,
+      "name": "NotSupplyController",
+      "msg": "set_finalized is only reachable via the supply-controller finalize CPI"
+    },
+    {
+      "code": 6006,
+      "name": "NotPauser",
+      "msg": "caller is not the pauser"
+    },
+    {
+      "code": 6007,
+      "name": "SystemAddressesAlreadySet",
+      "msg": "system addresses already set"
+    },
+    {
+      "code": 6008,
+      "name": "SystemAddressCannotBeBlocked",
+      "msg": "a system address must stay permanently Allowed"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidStatus",
+      "msg": "invalid compliance status"
+    },
+    {
+      "code": 6010,
+      "name": "NotUpgradeAuthority",
+      "msg": "caller is not the program upgrade authority"
+    },
+    {
+      "code": 6011,
+      "name": "VaultEscrowMustDiffer",
+      "msg": "vault and escrow must be different addresses"
+    },
+    {
+      "code": 6012,
+      "name": "SystemAddressesNotSet",
+      "msg": "system addresses must be pinned before finalizing"
+    },
+    {
+      "code": 6013,
+      "name": "AlreadyFinalized",
+      "msg": "deployment is already finalized"
+    },
+    {
+      "code": 6014,
+      "name": "NotExecutable",
+      "msg": "pinned supply-controller account must be an executable program"
+    },
+    {
+      "code": 6015,
+      "name": "MissingPrevRecord",
+      "msg": "superseded system-address record must be supplied to correct a pin"
+    },
+    {
+      "code": 6016,
+      "name": "WrongPrevRecord",
+      "msg": "supplied previous record does not match the superseded system address"
+    }
+  ],
+  "types": [
+    {
+      "name": "AdminChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "previous",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AdminProposed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "new_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AdminTransferCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "cancelled",
+            "type": "pubkey"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ComplianceRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "wallet",
+            "type": "pubkey"
+          },
+          {
+            "name": "status",
+            "docs": [
+              "0=Unknown, 1=Allowed, 2=Blocked."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "valid_until",
+            "docs": [
+              "Unix seconds; 0 = no expiry."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Finalized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PauseSet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Registry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "compliance_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "pauser",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault",
+            "type": "pubkey"
+          },
+          {
+            "name": "escrow",
+            "type": "pubkey"
+          },
+          {
+            "name": "supply_controller",
+            "docs": [
+              "Supply-controller program id, pinned at `set_system_addresses`; the",
+              "authority behind the `finalize` CPI that flips `finalized`."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "rwa_mint",
+            "docs": [
+              "The RWA mint, pinned at `set_system_addresses`. The transfer hook —",
+              "the single compliance chokepoint — asserts the mint it is invoked for equals",
+              "this, so the guarantee no longer depends only on the handler being",
+              "side-effect-free for a foreign mint that points its hook extension here."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "system_set",
+            "type": "bool"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "finalized",
+            "docs": [
+              "Global go-live flag; set once cross-program wiring is verified."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RoleChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "role",
+            "type": "u8"
+          },
+          {
+            "name": "previous",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_value",
+            "type": "pubkey"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StatusChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "account",
+            "type": "pubkey"
+          },
+          {
+            "name": "previous_status",
+            "type": "u8"
+          },
+          {
+            "name": "new_status",
+            "type": "u8"
+          },
+          {
+            "name": "previous_valid_until",
+            "type": "u64"
+          },
+          {
+            "name": "new_valid_until",
+            "type": "u64"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          }
+        ]
+      }
+    }
+  ]
+}

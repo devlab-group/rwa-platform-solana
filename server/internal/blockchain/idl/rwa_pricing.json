@@ -1,0 +1,667 @@
+{
+  "address": "B8a1y3LHPUwv95vSHBhcU6F2Fg4BzmrU17aSoKC5EjDh",
+  "metadata": {
+    "name": "rwa_pricing",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Fixed purchase/redemption price strategy (FixedPriceStrategy.sol on Solana)"
+  },
+  "instructions": [
+    {
+      "name": "accept_admin",
+      "docs": [
+        "Two-step admin rotation (accept)."
+      ],
+      "discriminator": [
+        112,
+        42,
+        45,
+        90,
+        116,
+        181,
+        13,
+        170
+      ],
+      "accounts": [
+        {
+          "name": "strategy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "new_admin",
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "cancel_admin_transfer",
+      "docs": [
+        "Withdraw a pending admin transfer (current admin only)."
+      ],
+      "discriminator": [
+        38,
+        131,
+        157,
+        31,
+        240,
+        137,
+        44,
+        215
+      ],
+      "accounts": [
+        {
+          "name": "strategy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "strategy"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "strategy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "program",
+          "address": "B8a1y3LHPUwv95vSHBhcU6F2Fg4BzmrU17aSoKC5EjDh"
+        },
+        {
+          "name": "program_data"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "token_decimals",
+          "type": "u8"
+        },
+        {
+          "name": "purchase_price",
+          "type": "u64"
+        },
+        {
+          "name": "redemption_price",
+          "type": "u64"
+        },
+        {
+          "name": "admin",
+          "type": "pubkey"
+        },
+        {
+          "name": "pricer",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "propose_admin",
+      "docs": [
+        "Two-step admin rotation (propose). Rejects a zero pending admin and emits",
+        "the proposal."
+      ],
+      "discriminator": [
+        121,
+        214,
+        199,
+        212,
+        87,
+        39,
+        117,
+        234
+      ],
+      "accounts": [
+        {
+          "name": "strategy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "strategy"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_pricer",
+      "docs": [
+        "Rotate the pricer. Admin-gated."
+      ],
+      "discriminator": [
+        85,
+        213,
+        157,
+        11,
+        236,
+        186,
+        161,
+        76
+      ],
+      "accounts": [
+        {
+          "name": "strategy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "strategy"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_pricer",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_purchase_price",
+      "discriminator": [
+        206,
+        176,
+        143,
+        2,
+        235,
+        143,
+        138,
+        1
+      ],
+      "accounts": [
+        {
+          "name": "strategy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pricer",
+          "signer": true,
+          "relations": [
+            "strategy"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_price",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "set_redemption_price",
+      "discriminator": [
+        229,
+        57,
+        97,
+        146,
+        6,
+        1,
+        117,
+        139
+      ],
+      "accounts": [
+        {
+          "name": "strategy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  114,
+                  97,
+                  116,
+                  101,
+                  103,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "pricer",
+          "signer": true,
+          "relations": [
+            "strategy"
+          ]
+        }
+      ],
+      "args": [
+        {
+          "name": "new_price",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Strategy",
+      "discriminator": [
+        174,
+        110,
+        39,
+        119,
+        82,
+        106,
+        169,
+        102
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AdminChanged",
+      "discriminator": [
+        232,
+        34,
+        31,
+        226,
+        62,
+        18,
+        19,
+        114
+      ]
+    },
+    {
+      "name": "AdminProposed",
+      "discriminator": [
+        129,
+        249,
+        226,
+        227,
+        199,
+        82,
+        110,
+        243
+      ]
+    },
+    {
+      "name": "AdminTransferCancelled",
+      "discriminator": [
+        93,
+        23,
+        69,
+        55,
+        216,
+        128,
+        106,
+        56
+      ]
+    },
+    {
+      "name": "PricerChanged",
+      "discriminator": [
+        7,
+        172,
+        14,
+        217,
+        223,
+        113,
+        169,
+        226
+      ]
+    },
+    {
+      "name": "PurchasePriceUpdated",
+      "discriminator": [
+        124,
+        22,
+        75,
+        139,
+        227,
+        198,
+        253,
+        183
+      ]
+    },
+    {
+      "name": "RedemptionPriceUpdated",
+      "discriminator": [
+        250,
+        19,
+        111,
+        187,
+        147,
+        170,
+        46,
+        204
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "ZeroAddress",
+      "msg": "zero address"
+    },
+    {
+      "code": 6001,
+      "name": "ZeroPrice",
+      "msg": "price must be non-zero"
+    },
+    {
+      "code": 6002,
+      "name": "DecimalsTooLarge",
+      "msg": "token decimals too large"
+    },
+    {
+      "code": 6003,
+      "name": "Overflow",
+      "msg": "quote overflow"
+    },
+    {
+      "code": 6004,
+      "name": "NotPricer",
+      "msg": "caller is not the pricer"
+    },
+    {
+      "code": 6005,
+      "name": "NotAdmin",
+      "msg": "caller is not the admin"
+    },
+    {
+      "code": 6006,
+      "name": "NotPendingAdmin",
+      "msg": "caller is not the pending admin"
+    },
+    {
+      "code": 6007,
+      "name": "NoPendingAdmin",
+      "msg": "no pending admin transfer to accept"
+    },
+    {
+      "code": 6008,
+      "name": "NotUpgradeAuthority",
+      "msg": "caller is not the program upgrade authority"
+    }
+  ],
+  "types": [
+    {
+      "name": "AdminChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "previous",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AdminProposed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "new_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AdminTransferCancelled",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "cancelled",
+            "type": "pubkey"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PricerChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "previous",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_pricer",
+            "type": "pubkey"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PurchasePriceUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "previous",
+            "type": "u64"
+          },
+          {
+            "name": "new_price",
+            "type": "u64"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RedemptionPriceUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "previous",
+            "type": "u64"
+          },
+          {
+            "name": "new_price",
+            "type": "u64"
+          },
+          {
+            "name": "by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Strategy",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pending_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "pricer",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_decimals",
+            "type": "u8"
+          },
+          {
+            "name": "purchase_price",
+            "type": "u64"
+          },
+          {
+            "name": "redemption_price",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

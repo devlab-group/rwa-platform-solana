@@ -1,0 +1,33 @@
+{
+  "name": "@rwa/solana",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Anchor programs for the RWA platform on Solana (Token-2022 + transfer-hook compliance)",
+  "license": "MIT",
+  "packageManager": "npm@11.6.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "lint": "prettier --check 'tests/**/*.ts'",
+    "test": "anchor test",
+    "verify-cluster": "node scripts/verify-cluster.mjs",
+    "create-test-quote-mint": "node scripts/create-test-quote-mint.mjs",
+    "bootstrap": "node scripts/bootstrap.mjs"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.32.1",
+    "@solana/spl-token": "^0.4.15"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.5",
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "chai": "^4.3.10",
+    "ethers": "^6.13.2",
+    "mocha": "^10.3.0",
+    "prettier": "^3.2.5",
+    "ts-mocha": "^10.0.0",
+    "typescript": "^5.4.2"
+  }
+}

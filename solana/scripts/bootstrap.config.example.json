@@ -1,0 +1,30 @@
+{
+  "_comment": "bootstrap config. Copy to bootstrap.config.json and fill in. All addresses are base58 pubkeys. Amounts/prices are integers in base units. See solana/README.md 'Deployment process'.",
+  "rpcUrl": "http://127.0.0.1:8899",
+  "payerKeypair": "~/.config/solana/id.json",
+
+  "rwaDecimals": 6,
+  "quoteDecimals": 6,
+  "quoteMint": "REQUIRED: base58 pubkey of the already-deployed quote mint (e.g. USDC)",
+
+  "rwaMintKeypair": "./bootstrap.rwa-mint.json",
+
+  "purchasePrice": 2000000,
+  "redemptionPrice": 1950000,
+  "redemptionTimeout": 86400,
+  "_profileDigest_comment": "Compute BEFORE bootstrapping, from the Asset Profile JSON you author offline: `cd server && go run ./cmd/canonicalize <profile.json>`. Permanent at initialize. The same document is later POSTed to /api/v1/profile, and the server refuses it unless it hashes to this. See solana/README.md 'Deployment process' step 5.",
+  "profileDigest": "REQUIRED: 0x-prefixed 32-byte hex",
+  "auditorEth": "REQUIRED: 0x-prefixed 20-byte auditor eth address (the offline signer holds the key)",
+
+  "roles": {
+    "admin": "REQUIRED: registry/config admin + deployer (must equal the programs' upgrade authority at finalize)",
+    "complianceAuthority": "REQUIRED",
+    "pauser": "REQUIRED",
+    "pricer": "REQUIRED",
+    "treasurer": "REQUIRED",
+    "redemptionManager": "REQUIRED",
+    "treasury": "REQUIRED"
+  },
+
+  "manifestOut": "./deployment-manifest.json"
+}

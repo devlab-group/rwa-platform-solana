@@ -1,0 +1,26 @@
+[package]
+name = "rwa-vault"
+version = "0.1.0"
+edition = "2021"
+description = "Inventory + on-chain buy + withdraw proceeds (Vault.sol on Solana)"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "rwa_vault"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+
+[dependencies]
+anchor-lang = "1.1.2"
+anchor-spl = { version = "1.1.2", features = ["token", "token_2022"] }
+rwa-compliance = { path = "../rwa-compliance", features = ["no-entrypoint"] }
+rwa-pricing = { path = "../rwa-pricing", features = ["no-entrypoint"] }
+pricing-math = { path = "../../crates/pricing-math" }
+rwa-transfer-hook = { path = "../rwa-transfer-hook", features = ["no-entrypoint"] }

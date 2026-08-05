@@ -1,0 +1,26 @@
+{
+  "_comment": "FROZEN golden mint attestation, byte-identical to solana/tests/vectors/mint-attestation.json. This is the cross-language parity anchor for the Go signer (signer/internal/attestation/attestation.go), the Rust verifier (solana/crates/attestation) and the TypeScript parity test (solana/tests/attestation-parity.ts). digest is the raw 32-byte keccak digest that secp256k1_recover(digest, signature, recoveryId) must recover `auditor` from (no message-prefixing of any kind is applied). signature is the 64-byte compact r||s form the on-chain syscall consumes -- the recovery byte is carried separately as recoveryId (0 or 1), not appended -- and is canonical low-S, which the on-chain verifier requires. Produced by a fixed, publicly-known test key; never use it for anything real.",
+  "domain": {
+    "name": "RWA-Supply-Attestation-Solana",
+    "version": "1",
+    "cluster": "0x1111111111111111111111111111111111111111111111111111111111111111",
+    "program": "0x2222222222222222222222222222222222222222222222222222222222222222",
+    "config": "0x3333333333333333333333333333333333333333333333333333333333333333"
+  },
+  "message": {
+    "auditor": "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+    "profileDigest": "0x4444444444444444444444444444444444444444444444444444444444444444",
+    "recordKey": "0x5555555555555555555555555555555555555555555555555555555555555555",
+    "metadataDigest": "0x6666666666666666666666666666666666666666666666666666666666666666",
+    "amount": "1000000000000",
+    "nonce": "0x000000000000000000000000000000000000000000000000000000000000002a",
+    "validUntil": 1800000000,
+    "vault": "0x7777777777777777777777777777777777777777777777777777777777777777"
+  },
+  "domainSeparator": "0xd2ea3f95cff955b96bd1461fca655fdfff232e80eb349cfca6079b2e21df89db",
+  "hashStruct": "0x85ebfb974ff2a032cd56064572d280ad8378cdf9186db5cc8a9ea3371bf53bad",
+  "digest": "0x27e6aed00dd4a6599420b86eefa0fdb517886df306636544c0aa1640d39d7894",
+  "signerPrivateKey": "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+  "signature": "0x47b8e77b45baa51ced062f0ed6b693c9180379ba0d3bd1f824aa415d2fbdfe1d07e219a20a358306b3693f72f4a0ffd7afdca3b3f1cc3aba6237fa73e10b742b",
+  "recoveryId": 1
+}

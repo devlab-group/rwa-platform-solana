@@ -1,0 +1,5 @@
+[toolchain]
+# Host toolchain for the plain `crates/*` (cargo test). The Anchor programs are
+# built with the Solana platform-tools SBF toolchain (pinned via Anchor.toml),
+# which brings its own rustc; this pin only governs host builds/tests.
+channel = "stable"
