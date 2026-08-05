@@ -12,11 +12,11 @@ on:
   workflow_dispatch:
 
 # Single source for the Node pin, so the five setup-node steps below cannot
-# drift apart or away from the local toolchain. It MUST match the node that
-# generated the committed package-lock.json files: npm's optional-peer
-# resolution differs between majors (npm 10 wants a nested utf-8-validate@5 for
-# jayson's ws@7 peer, npm 11 does not), and `npm ci` fails the lock-sync check
-# on the mismatch rather than installing.
+# drift apart from each other or from the local toolchain recorded in CLAUDE.md.
+# The lockfiles are npm-major-agnostic on their own — see the `utf-8-validate`
+# override each package.json carries, which is what actually reconciles npm 10's
+# and npm 11's optional-peer resolution — so this pin is toolchain alignment,
+# not a workaround.
 env:
   NODE_VERSION: "24"
 

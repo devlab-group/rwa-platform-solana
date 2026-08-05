@@ -29,7 +29,7 @@
     "react-router-dom": "^6.28.0"
   },
   "overrides": {
-    "playwright-core": "1.61.1"
+    "utf-8-validate": "5.0.10"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",

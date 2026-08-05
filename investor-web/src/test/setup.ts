@@ -15,7 +15,7 @@ import { afterEach } from "vitest";
 // Investor.test.tsx) still stubs them explicitly, which continues to win.
 //
 // Deliberately NOT cleared: VITE_SOLANA_RPC_URL / VITE_SOLANA_WS_URL. Those
-// are what `.env.test.local` exists to provide — the unit tests use them to
+// are what `.env.test` exists to provide — the unit tests use them to
 // exercise the real getConnection() path, and cspPolicy.test.ts builds a
 // bundle that must carry both origins. Tests needing the genuinely-unset RPC
 // case override it to "" themselves.

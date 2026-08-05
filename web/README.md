@@ -258,6 +258,23 @@ context, which the login gate needs immediately.
 
 From the repo root, `make web-test` runs typecheck + test + build.
 
+## The `utf-8-validate` override
+
+`package.json` pins `overrides: { "utf-8-validate": "5.0.10" }`. Do not drop it.
+Two packages in the `@solana/web3.js` tree ask for incompatible versions of that
+optional native accelerator — `jayson`'s nested `ws@7` peer-depends on `^5.0.2`
+while `rpc-websockets` lists `^6.0.0` as an optional dependency — and npm has no
+single hoisted version that satisfies both. The resulting tree is *installable*
+but carries an edge npm considers invalid, which breaks tooling in two ways that
+look unrelated: `npm sbom` refuses to emit (`ESBOMPROBLEMS`), and npm majors
+disagree about whether a nested copy is needed, so a lockfile written by npm 11
+fails `npm ci` under npm 10 with `Missing: utf-8-validate@5.0.10 from lock file`.
+`5.0.10` satisfies every consumer's range at once, so the conflict disappears
+rather than being papered over.
+
+It is never loaded in the browser: the bundle takes the pure-JS `ws` path, and
+this package only ever affects Node-side tooling.
+
 ## The `NODE_ENV=production` build note
 
 `npm run build` explicitly runs `NODE_ENV=production vite build` rather than bare

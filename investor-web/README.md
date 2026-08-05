@@ -226,6 +226,15 @@ npm run test:e2e    # build + Playwright critical-flow suite (tests/)
 `dist/` is a plain static bundle — serve it from any static host, or from the
 platform server itself if you point it at this build output.
 
+`package.json` pins `overrides: { "utf-8-validate": "5.0.10" }` — keep it if you
+fork this app. Inside the `@solana/web3.js` tree, `jayson`'s nested `ws@7`
+peer-depends on `^5.0.2` of that optional native accelerator while
+`rpc-websockets` lists `^6.0.0`, and no single hoisted version satisfies both.
+The tree still installs, but the invalid edge makes `npm sbom` fail outright and
+makes npm 10 and npm 11 disagree on the lockfile, so `npm ci` breaks on whichever
+major did not write it. `5.0.10` satisfies every consumer at once. It never
+reaches the browser bundle — this only affects Node-side tooling.
+
 ## Layout
 
 ```

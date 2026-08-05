@@ -98,6 +98,16 @@ solana-test-validator --reset \
 > `anchor keys sync` once on a machine with the toolchain to mint real keypairs.
 > `Anchor.toml [toolchain]` is intentionally left empty (uses the toolchain on PATH).
 
+The TS test/deploy tooling's `package.json` pins
+`overrides: { "utf-8-validate": "5.0.10" }`. Do not drop it. Inside the
+`@solana/web3.js` tree, `jayson`'s nested `ws@7` peer-depends on `^5.0.2` of that
+optional native accelerator while `rpc-websockets` lists `^6.0.0`, and no single
+hoisted version satisfies both. The tree installs anyway, but the invalid edge
+makes `npm sbom` fail outright (`ESBOMPROBLEMS`) and makes npm 10 and npm 11
+disagree on the lockfile, so `npm ci` breaks under whichever major did not write
+it. `5.0.10` satisfies every consumer at once. This is off-chain tooling only —
+nothing here ships in a program.
+
 ## Deployment process
 
 A start-to-finish runbook for taking the stack from source to a live, wired
