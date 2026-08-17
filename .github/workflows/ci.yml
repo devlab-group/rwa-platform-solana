@@ -17,8 +17,18 @@ on:
 # override each package.json carries, which is what actually reconciles npm 10's
 # and npm 11's optional-peer resolution — so this pin is toolchain alignment,
 # not a workaround.
+#
+# GO_VERSION is a full patch pin, unlike NODE_VERSION, because govulncheck below
+# scans the *standard library* of whichever toolchain built the code. A floating
+# "1.25" made the security-scan result depend on the setup-go manifest's mood: the
+# same commit passed or failed by the day it ran. The patch must stay >= the fix
+# version of every stdlib advisory govulncheck reports, so a Go security release
+# will fail the gate until this line is bumped — that is the intended behaviour,
+# not breakage. Keep in lockstep with GOTOOLCHAIN in the root Makefile, which is
+# what makes `make security-scan` reproduce this job locally.
 env:
   NODE_VERSION: "24"
+  GO_VERSION: "1.25.13"
 
 jobs:
   signer:
@@ -26,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
-        with: { go-version: "1.25" }
+        with: { go-version: "${{ env.GO_VERSION }}" }
       - run: cd signer && go vet ./... && go test -race ./...
 
   server:
@@ -38,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
-        with: { go-version: "1.25" }
+        with: { go-version: "${{ env.GO_VERSION }}" }
       - run: cd server && go vet ./... && go test -race ./...
 
   web:
@@ -180,7 +190,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: "${{ env.NODE_VERSION }}" }
       - uses: actions/setup-go@v5
-        with: { go-version: "1.25" }
+        with: { go-version: "${{ env.GO_VERSION }}" }
       - name: build web
         run: cd web && npm ci && npm run build
       # The old long-lived operator-API-key localStorage design must never ship in the
@@ -240,7 +250,7 @@ jobs:
           (cd solana && npm ci)
           node scripts/npm-audit-gate.mjs solana
       - uses: actions/setup-go@v5
-        with: { go-version: "1.25" }
+        with: { go-version: "${{ env.GO_VERSION }}" }
       - name: govulncheck (server + signer)
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest

@@ -1,6 +1,16 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
+# Pin the exact Go toolchain for every target below, so `make` builds, tests and
+# scans against the same standard library CI does. Must match GO_VERSION in
+# .github/workflows/ci.yml. Without this, GOTOOLCHAIN=auto silently uses whatever
+# Go the developer happens to have — and since `security-scan` reports stdlib
+# advisories against the *building* toolchain, a newer local Go can fail the scan
+# that CI passes, or vice versa. Overridable for a one-off cross-check:
+#   make security-scan GOTOOLCHAIN=go1.26.6
+GOTOOLCHAIN ?= go1.25.13
+export GOTOOLCHAIN
+
 .PHONY: help bootstrap format lint signer-test server-test web-test \
         investor-web-test vectors-check dialect-check ci up down \
         security-scan platform signer embed-check solana-test solana-anchor-build solana-anchor-test
